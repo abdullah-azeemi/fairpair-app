@@ -1,5 +1,7 @@
+import DashboardPage from "@/components/dashboard-page";
+
 export default function page(){
   return <div>
-    This is your dashboard
+    <DashboardPage />
   </div>
 }
