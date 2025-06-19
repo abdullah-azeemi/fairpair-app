@@ -21,6 +21,7 @@ type FormData = {
   github: string;
   linkedin: string;
   email: string;
+  password: string;
 };
 
 export default function SignupPage() {
@@ -35,6 +36,7 @@ export default function SignupPage() {
     github: "",
     linkedin: "",
     email: "",
+    password: "",
   })
 
   const [skillInput, setSkillInput] = useState("")
@@ -43,7 +45,7 @@ export default function SignupPage() {
   const router = useRouter()
 
   const handleNext = () => {
-    if (currentStep === 1 && formData.name && formData.username) {
+    if (currentStep === 1 && formData.name && formData.username && formData.password && formData.confirmPassword) {
       setCurrentStep(2)
     }
   }
@@ -207,6 +209,37 @@ export default function SignupPage() {
                     />
                   </div>
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-sm font-medium">
+                    Password *
+                  </Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Create a strong password"
+                    value={formData.password}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
+                    className="h-11 transition-all duration-300 focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword" className="text-sm font-medium">
+                    Confirm Password *
+                  </Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    placeholder="Confirm your password"
+                    value={formData.confirmPassword}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, confirmPassword: e.target.value }))}
+                    className="h-11 transition-all duration-300 focus:ring-2 focus:ring-blue-500"
+                  />
+                  {formData.confirmPassword && formData.password !== formData.confirmPassword && (
+                    <p className="text-xs text-red-500">Passwords do not match</p>
+                  )}
+                </div>
+
 
                 <Button
                   onClick={handleNext}
