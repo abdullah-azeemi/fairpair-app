@@ -9,17 +9,19 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, ArrowRight, Plus, X, Github, Linkedin, Mail, User, Code, Heart, CheckCircle } from "lucide-react"
 import Link from "next/link"
+import axios from "axios"
+import { useRouter } from "next/navigation"
 
-interface FormData {
-  name: string
-  username: string
-  bio: string
-  skills: string[]
-  interests: string[]
-  github: string
-  linkedin: string
-  email: string
-}
+type FormData = {
+  name: string;
+  username: string;
+  bio: string;
+  skills: string[];
+  interests: string[];
+  github: string;
+  linkedin: string;
+  email: string;
+};
 
 export default function SignupPage() {
   const [currentStep, setCurrentStep] = useState(1)
@@ -37,6 +39,8 @@ export default function SignupPage() {
 
   const [skillInput, setSkillInput] = useState("")
   const [interestInput, setInterestInput] = useState("")
+
+  const router = useRouter()
 
   const handleNext = () => {
     if (currentStep === 1 && formData.name && formData.username) {
@@ -86,10 +90,14 @@ export default function SignupPage() {
 
   const handleSubmit = async () => {
     setIsLoading(true)
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-    setIsLoading(false)
-    // Handle success
+    try {
+      const response = await axios.post('/api/signup', formData)
+      setIsLoading(false)
+      console.log(response)
+      router.push('/dashboard')
+    } catch (error) {
+      setIsLoading(false)
+    }
   }
 
   const suggestedSkills = ["React", "Python", "JavaScript", "AI/ML", "Node.js", "TypeScript", "Flutter", "Swift"]
