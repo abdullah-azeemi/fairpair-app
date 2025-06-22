@@ -6,10 +6,8 @@ import {
   Plus,
 } from "lucide-react"
 import Link from "next/link"
-import UserInfoSkeleton from "./dashboard/UserInfoSkeleton"
 import UserInfo from "./dashboard/UserInfo"
 import ProjectList from "./dashboard/ProjectsList"
-import ProjectListSkeleton from "./dashboard/ProjectListSkeleton"
 import RecentActivity from "./dashboard/RecentActivity"
 import RecentActivitySkeleton from "./dashboard/RecentActivitySkeleton"
 import MessagesRequest from "./dashboard/MessagesRequest"
@@ -156,7 +154,7 @@ export default function DashboardPage() {
 
       <div className="max-w-6xl mx-auto px-4 py-8">
           <div>
-            {userLoading ? <UserInfoSkeleton /> : <UserInfo userData= {user} />}
+            <UserInfo />
           </div>
         {/* Main Dashboard Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -164,7 +162,7 @@ export default function DashboardPage() {
           <div className="lg:col-span-2 space-y-8">
             {/* User's Projects */}
               <div>
-                {userLoading? <ProjectListSkeleton /> : <ProjectList userProjects={project} />}
+                <ProjectList />
               </div>
             {/* Activity Timeline */}
               <div>

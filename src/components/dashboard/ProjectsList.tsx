@@ -10,20 +10,17 @@ import {
   Clock,
 } from "lucide-react"
 import Link from "next/link"
+import useSWR from "swr"
+import ProjectListSkeleton from "./ProjectListSkeleton"
 
-export type Project = {
-  id: string
-  title: string
-  description: string
-  skills: string[]
-  createdAt: string
-  views: number
-  collaborators: number
-  status: string
-}
+export default function ProjectList(){
 
-export type UserProjects = Project[]
-export default function ProjectList({userProjects}: {userProjects: UserProjects}){
+  const fetcher = (url:string) => fetch(url).then(res => res.json());
+  const {data, error, isLoading} = useSWR('/api/projects', fetcher);
+
+  if (isLoading) return <ProjectListSkeleton />
+  if (error) return <div className="text-red-500">Failed to Load Projects</div>
+  if(!data) return null;
 
   return <div>
     <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
@@ -31,7 +28,7 @@ export default function ProjectList({userProjects}: {userProjects: UserProjects}
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center">
                     <Users size={20} className="mr-2 text-blue-600" />
-                    My Projects ({userProjects.length})
+                    My Projects ({data.length})
                   </CardTitle>
                   <Link href="/projects/new">
                     <Button
@@ -45,7 +42,7 @@ export default function ProjectList({userProjects}: {userProjects: UserProjects}
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                {userProjects.map((project) => (
+                {data.map((project: any) => (
                   <div
                     key={project.id}
                     className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow"
@@ -66,7 +63,7 @@ export default function ProjectList({userProjects}: {userProjects: UserProjects}
                         </div>
                         <p className="text-gray-600 text-sm mb-2">{project.description}</p>
                         <div className="flex flex-wrap gap-1 mb-2">
-                          {project.skills.map((skill) => (
+                          {project.skills && project.skills.map((skill: string) => (
                             <Badge key={skill} variant="outline" className="text-xs">
                               {skill}
                             </Badge>
