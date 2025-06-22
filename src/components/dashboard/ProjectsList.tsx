@@ -16,7 +16,7 @@ import ProjectListSkeleton from "./ProjectListSkeleton"
 export default function ProjectList(){
 
   const fetcher = (url:string) => fetch(url).then(res => res.json());
-  const {data, error, isLoading} = useSWR('/api/projects', fetcher);
+  const {data, error, isLoading} = useSWR('/api/projects/user', fetcher);
 
   if (isLoading) return <ProjectListSkeleton />
   if (error) return <div className="text-red-500">Failed to Load Projects</div>

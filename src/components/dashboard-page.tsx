@@ -15,58 +15,6 @@ import MessagesRequestSkeleton from "./dashboard/MessagesRequestSkeleton"
 import AchievementsandReccomendations from "./dashboard/AchievementsandReccomendations"
 import AchievementsandReccomendationsSkeleton from "./dashboard/AchievementsandReccomendationsSkeleton"
 
-// Mock user data
-const userData = {
-  name: "Abdullah Musharaf",
-  username: "abdullah",
-  avatar: "/placeholder.svg?height=80&width=80",
-  bio: "Full-stack developer passionate about AI and building products that make a difference. Love working on innovative projects with amazing teams.",
-  skills: ["React", "Next.js", "Python", "AI/ML", "Node.js", "TypeScript"],
-  interests: ["AI", "Education", "Self-driving cars", "Web3", "Robotics"],
-  links: {
-    github: "https://github.com/abdullah",
-    linkedin: "https://linkedin.com/in/abdullah",
-    email: "abdullah@example.com",
-    portfolio: "https://abdullah.dev",
-  },
-  joinedDate: "March 2024",
-  profileStrength: 85,
-}
-
-// Mock projects data
-const userProjects = [
-  {
-    id: "1",
-    title: "AI Resume Builder",
-    description: "Smart resume generator using GPT-4",
-    skills: ["React", "GPT-4", "Node.js"],
-    createdAt: "2 days ago",
-    views: 124,
-    collaborators: 3,
-    status: "active",
-  },
-  {
-    id: "2",
-    title: "Smart Home Dashboard",
-    description: "IoT control panel with real-time monitoring",
-    skills: ["React", "IoT", "Firebase"],
-    createdAt: "1 week ago",
-    views: 89,
-    collaborators: 2,
-    status: "completed",
-  },
-  {
-    id: "3",
-    title: "Learning Management System",
-    description: "Educational platform for online courses",
-    skills: ["Next.js", "PostgreSQL", "Stripe"],
-    createdAt: "2 weeks ago",
-    views: 156,
-    collaborators: 5,
-    status: "active",
-  },
-]
-
 // Mock messages/requests
 const incomingRequests = [
   {
@@ -119,8 +67,6 @@ const recommendedProjects = [
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("overview");
-  const user = userData;
-  const project = userProjects;
   const userLoading = false;
   const requests = incomingRequests;
   const Reccomendations = recommendedProjects;
