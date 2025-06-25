@@ -1,18 +1,11 @@
 import { NextResponse } from "next/server";
-import { prisma } from '../../../lib/prisma';
+import { supabase } from "@/utils/supabase";
 
-export async function GET(){
-
-  const projects = await prisma.project.findMany({
-    select:{
-      id:true,
-      title:true,
-      description:true,
-      skillsNeeded:true,
-      createdAt:true,
-      status:true,
-    },
-    orderBy: {createdAt: 'desc'}
-  });
+export async function GET() {
+  const { data: projects, error } = await supabase
+    .from("projects")
+    .select("id, title, description, skillsNeeded, createdAt, status")
+    .order("createdAt", { ascending: false });
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json(projects);
 }

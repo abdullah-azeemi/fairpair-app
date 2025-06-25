@@ -11,6 +11,7 @@ import { ArrowLeft, ArrowRight, Plus, X, Github, Linkedin, Mail, User, Code, Hea
 import Link from "next/link"
 import axios from "axios"
 import { useRouter } from "next/navigation"
+import { signIn } from "next-auth/react"
 
 type FormData = {
   name: string;
@@ -22,6 +23,7 @@ type FormData = {
   linkedin: string;
   email: string;
   password: string;
+  confirmPassword: string;
 };
 
 export default function SignupPage() {
@@ -37,6 +39,7 @@ export default function SignupPage() {
     linkedin: "",
     email: "",
     password: "",
+    confirmPassword: "",
   })
 
   const [skillInput, setSkillInput] = useState("")
@@ -96,9 +99,15 @@ export default function SignupPage() {
       const response = await axios.post('/api/signup', formData)
       setIsLoading(false)
       console.log(response)
+      await signIn("credentials", {
+        redirect: false,
+        email: formData.email,
+        password: formData.password,
+      })
       router.push('/dashboard')
     } catch (error) {
       setIsLoading(false)
+      console.log("Signup error", error)
     }
   }
 
