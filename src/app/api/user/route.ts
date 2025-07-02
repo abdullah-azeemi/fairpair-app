@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/utils/supabase";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth/[...nextauth]/route";
 
-export async function GET() {
-  const userId = "cmc4n4nhy00005amoidqqlvft"; // Replace with actual user ID from session/auth
+export async function GET(req: Request) {
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
+  if (!userId) return NextResponse.json({ error: 'User not found' }, { status: 404 });
   const { data: user, error } = await supabase
     .from("users")
-    .select("id, name, username, bio, skills, interests, github, linkedin, email, createdAt")
+    .select("id, name, username, bio, skills, interests, github, linkedin, email, created_at")
     .eq("id", userId)
     .single();
   if (error || !user) {

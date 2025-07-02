@@ -13,21 +13,46 @@ export const authOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
-        // Fetch user from Supabase
+        
         const { data: user, error } = await supabase
           .from("users")
           .select("*")
           .eq("email", credentials.email)
           .single();
+
         if (error || !user || !user.password) return null;
+
         const isValid = await verify(user.password, credentials.password);
         if (!isValid) return null;
-        return user;
+
+        return {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          username: user.username,
+        };
       },
     }),
   ],
   session: {
-    strategy: "jwt",
+    strategy: "jwt" as const,
+  },
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.username = user.username;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      // adding user ID to the session
+      if (token) {
+        session.user.id = token.id as string;
+        session.user.username = token.username as string;
+      }
+      return session;
+    },
   },
   pages: {
     signIn: "/login",

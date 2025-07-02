@@ -58,7 +58,7 @@ export default function UserInfo() {
       email: data.email || '',
       portfolio: '#', // No portfolio in backend yet
     },
-    joinedDate: new Date(data.createdAt).toLocaleString('default', { month: 'long', year: 'numeric' }),
+    //joinedDate: new Date(data.createdAt).toLocaleString('default', { month: 'long', year: 'numeric' }),
     profileStrength: 85, // Placeholder, calculate as needed
   };
 
@@ -80,7 +80,7 @@ export default function UserInfo() {
             <div className="text-center sm:text-left">
               <h1 className="text-2xl font-bold text-gray-900">{userData.name}</h1>
               <p className="text-gray-600">@{userData.username}</p>
-              <p className="text-sm text-gray-500 mt-1">Joined {userData.joinedDate}</p>
+              <p className="text-sm text-gray-500 mt-1">Joined {/*userData.joinedDate*/}</p>
             </div>
           </div>
 

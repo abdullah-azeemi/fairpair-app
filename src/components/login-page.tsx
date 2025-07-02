@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,17 +9,41 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Separator } from "@/components/ui/separator"
 import { Eye, EyeOff, Github, Mail, Users, ArrowLeft } from "lucide-react"
 import Link from "next/link"
+import { signIn } from "next-auth/react"
+import { useRouter } from "next/navigation"
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
+  
+  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    // Simulate login process
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-    setIsLoading(false)
+    setError("")
+
+    try {
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      })
+
+      if (result?.error) {
+        setError("Invalid email or password")
+      } else if (result?.ok) {
+        router.push("/dashboard")
+      }
+    } catch (error) {
+      setError("An error occurred during login")
+      console.error("Login error:", error)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -43,7 +66,6 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Back to Home Button */}
       <Link
         href="/"
         className="absolute top-6 left-6 z-20 flex items-center text-gray-600 hover:text-gray-900 transition-colors"
@@ -52,11 +74,10 @@ export default function LoginPage() {
         <span className="hidden sm:inline">Back to Home</span>
       </Link>
 
-      {/* Main Login Card */}
+      {/* main Login Card */}
       <div className="relative z-10 w-full max-w-md">
         <Card className="backdrop-blur-sm bg-white/80 border-0 shadow-2xl">
           <CardHeader className="text-center space-y-4 pb-8">
-            {/* Logo */}
             <div className="mx-auto w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center">
               <Users size={32} className="text-white" />
             </div>
@@ -102,7 +123,14 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Login Form */}
+            {/* Error Message */}
+            {error && (
+              <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+                {error}
+              </div>
+            )}
+
+            {/* login Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm font-medium">
@@ -112,6 +140,8 @@ export default function LoginPage() {
                   id="email"
                   type="email"
                   placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                   className="h-11 transition-all duration-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   disabled={isLoading}
@@ -132,6 +162,8 @@ export default function LoginPage() {
                     id="password"
                     type={showPassword ? "text" : "password"}
                     placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     required
                     className="h-11 pr-10 transition-all duration-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     disabled={isLoading}
@@ -178,7 +210,7 @@ export default function LoginPage() {
               </Link>
             </div>
 
-            {/* Trust Indicators */}
+            
             <div className="flex items-center justify-center space-x-4 text-xs text-gray-500">
               <div className="flex items-center">
                 <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
@@ -193,7 +225,7 @@ export default function LoginPage() {
           </CardFooter>
         </Card>
 
-        {/* Additional Info */}
+        
         <div className="mt-8 text-center text-xs text-gray-500 space-y-2">
           <p>By signing in, you agree to our Terms of Service and Privacy Policy</p>
           <div className="flex justify-center space-x-4">

@@ -20,7 +20,8 @@ export default function ProjectList(){
 
   if (isLoading) return <ProjectListSkeleton />
   if (error) return <div className="text-red-500">Failed to Load Projects</div>
-  if(!data) return null;
+  if (!data) return null;
+  if (!Array.isArray(data)) return <div className="text-red-500">No projects found or error loading projects.</div>;
 
   return <div>
     <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
