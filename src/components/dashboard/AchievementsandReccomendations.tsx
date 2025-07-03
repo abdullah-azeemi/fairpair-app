@@ -9,6 +9,7 @@ import {
   Zap,
 } from "lucide-react"
 import Link from "next/link"
+import useSWR from "swr"
 
 export type RecommendedProject = {
   id: string
@@ -19,7 +20,20 @@ export type RecommendedProject = {
   timeAgo: string
 }
 
+const ACHIEVEMENT_BADGES = [
+  { type: 'first_project', label: 'Quick Starter', icon: <Zap size={24} className="mx-auto text-purple-600 mb-1" /> },
+  { type: 'colab_pro', label: 'Colab Pro', icon: <Users size={24} className="mx-auto text-blue-600 mb-1" /> },
+  { type: 'top_contributor', label: 'Top Contributor', icon: <Star size={24} className="mx-auto text-green-600 mb-1" /> },
+  { type: 'mentor', label: 'Mentor', icon: <Award size={24} className="mx-auto text-orange-600 mb-1" /> },
+];
+
 export default function AchievementsandRequest({ recommendedProjects }: { recommendedProjects: RecommendedProject[] }) {
+  const fetcher = (url: string) => fetch(url).then(res => res.json());
+  const { data: achievements, error, isLoading } = useSWR('/api/achievements', fetcher);
+
+  // Map earned achievements for quick lookup
+  const earned = new Set((achievements || []).map((a: any) => a.type));
+
   return (
     <div className="space-y-8">
       <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
@@ -31,22 +45,16 @@ export default function AchievementsandRequest({ recommendedProjects }: { recomm
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-3">
-            <div className="text-center p-3 bg-blue-50 rounded-lg">
-              <Users size={24} className="mx-auto text-blue-600 mb-1" />
-              <p className="text-xs font-medium text-blue-900">Team Player</p>
-            </div>
-            <div className="text-center p-3 bg-purple-50 rounded-lg">
-              <Zap size={24} className="mx-auto text-purple-600 mb-1" />
-              <p className="text-xs font-medium text-purple-900">Quick Starter</p>
-            </div>
-            <div className="text-center p-3 bg-green-50 rounded-lg">
-              <Star size={24} className="mx-auto text-green-600 mb-1" />
-              <p className="text-xs font-medium text-green-900">Top Contributor</p>
-            </div>
-            <div className="text-center p-3 bg-orange-50 rounded-lg">
-              <Award size={24} className="mx-auto text-orange-600 mb-1" />
-              <p className="text-xs font-medium text-orange-900">Mentor</p>
-            </div>
+            {ACHIEVEMENT_BADGES.map((badge) => (
+              <div
+                key={badge.type}
+                className={`text-center p-3 rounded-lg border transition-all duration-200 ${earned.has(badge.type) ? 'bg-green-50 border-green-300' : 'bg-gray-50 border-gray-200 opacity-60'}`}
+              >
+                {badge.icon}
+                <p className={`text-xs font-medium ${earned.has(badge.type) ? 'text-green-900' : 'text-gray-900'}`}>{badge.label}</p>
+                {earned.has(badge.type) && <span className="block text-green-600 text-xs mt-1">Unlocked!</span>}
+              </div>
+            ))}
           </div>
         </CardContent>
       </Card>

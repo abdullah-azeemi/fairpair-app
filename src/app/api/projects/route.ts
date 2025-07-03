@@ -9,7 +9,12 @@ export async function GET() {
     .select("id, title, description, skills_needed, created_at, status")
     .order("created_at", { ascending: false });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json(projects);
+  const mapped = (projects || []).map((p) => ({
+    ...p,
+    skillsNeeded: p.skills_needed || [],
+    createdAt: p.created_at,
+  }));
+  return NextResponse.json(mapped);
 }
 
 export async function POST(req: Request) {
@@ -39,7 +44,7 @@ export async function POST(req: Request) {
         title,
         description,
         category,
-        skillsNeeded,
+        skills_needed: skillsNeeded,
         lookingForCollaborators,
         timeline,
         teamsize: teamSize,
@@ -51,6 +56,23 @@ export async function POST(req: Request) {
       }
     ]).select().single();
     if (error) throw error;
+    await supabase.from("activity").insert([
+      {
+        user_id: userId,
+        type: "project_posted",
+        details: { project_id: newProject.id, title },
+      }
+    ]);
+    const { count } = await supabase
+      .from("projects")
+      .select("*", { count: "exact", head: true })
+      .eq("author_id", userId);
+
+    if (count === 1) {
+      await supabase.from("achievements").insert([
+        { user_id: userId, type: "first_project" }
+      ]);
+    }
     return NextResponse.json({ success: true, project: newProject });
   } catch (error: any) {
     console.error("Project creation error", error);
