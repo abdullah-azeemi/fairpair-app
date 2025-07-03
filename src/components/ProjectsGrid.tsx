@@ -12,11 +12,13 @@ export type Project = {
   skillsNeeded: string[],
   createdAt: string,
   status: string,
+  author_id: string,
 };
 
 export default function ProjectsGrid({projects}: {projects: Project[]}){
   return <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
   {projects.map((project) => {
+    console.log(project);
     return (
       <Card
         key={project.id}
@@ -51,6 +53,11 @@ export default function ProjectsGrid({projects}: {projects: Project[]}){
           <Link href={`/projects/${project.id}`} className="flex-1">
             <Button className="w-full h-9 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-sm">
               View Project
+            </Button>
+          </Link>
+          <Link href={`/messages?recipient=${project.author_id}`} className="flex-1 mt-2 block">
+            <Button variant="outline" className="w-full h-9 text-blue-600 border-blue-200">
+              Message
             </Button>
           </Link>
         </CardContent>

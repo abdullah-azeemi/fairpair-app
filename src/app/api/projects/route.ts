@@ -6,7 +6,7 @@ import { authOptions } from "../auth/[...nextauth]/route";
 export async function GET() {
   const { data: projects, error } = await supabase
     .from("projects")
-    .select("id, title, description, skills_needed, created_at, status")
+    .select("id, title, description, skills_needed, created_at, status, author_id")
     .order("created_at", { ascending: false });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   const mapped = (projects || []).map((p) => ({
