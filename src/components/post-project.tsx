@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch"
 import { ArrowLeft, ArrowRight, Plus, X, Lightbulb, Users, CheckCircle, Rocket } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 interface ProjectData {
   title: string
@@ -40,6 +41,7 @@ export default function PostProjectPage() {
   })
 
   const [skillInput, setSkillInput] = useState("")
+  const router = useRouter();
 
   const handleNext = () => {
     if (currentStep === 1 && projectData.title && projectData.description && projectData.category) {
@@ -72,10 +74,25 @@ export default function PostProjectPage() {
 
   const handleSubmit = async () => {
     setIsLoading(true)
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-    setIsLoading(false)
-    // Handle success - redirect to project page or show success message
+    try {
+      const res = await fetch("/api/projects", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(projectData),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || "Failed to create project");
+        setIsLoading(false);
+        return;
+      }
+      
+      router.push("/projects");
+    } catch (err) {
+      console.error("Project creation error:", err);
+      alert("An error occurred while creating the project.");
+      setIsLoading(false);
+    }
   }
 
   const categories = [

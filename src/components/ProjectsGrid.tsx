@@ -41,7 +41,7 @@ export default function ProjectsGrid({projects}: {projects: Project[]}){
           <div className="mb-4">
             <p className="text-xs font-medium text-gray-700 mb-2">Skills Needed:</p>
             <div className="flex flex-wrap gap-1">
-              {project.skillsNeeded.map((skill) => (
+              {project.skillsNeeded && project.skillsNeeded.map((skill) => (
                 <Badge key={skill} className="text-xs bg-gray-100 text-gray-700">
                   {skill}
                 </Badge>
