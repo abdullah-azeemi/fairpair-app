@@ -40,14 +40,13 @@ export default function MessagesRequest({ incomingRequests }: { incomingRequests
                   <AvatarFallback>{request.from[0]}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
+                  <p className="text-lg font-bold mb-1">{request.message}</p>
                   <div className="flex items-center gap-2 mb-1">
                     <span className="font-medium text-sm text-gray-900">{request.from}</span>
                     <Badge variant="outline" className="text-xs">
                       {request.type}
                     </Badge>
                   </div>
-                  <p className="text-xs text-gray-600 mb-1">{request.project}</p>
-                  <p className="text-xs text-gray-500 line-clamp-2">{request.message}</p>
                   <span className="text-xs text-gray-400">{request.time}</span>
                 </div>
               </div>

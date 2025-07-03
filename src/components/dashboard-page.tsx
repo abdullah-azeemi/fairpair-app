@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Plus,
@@ -14,30 +14,9 @@ import MessagesRequest from "./dashboard/MessagesRequest"
 import MessagesRequestSkeleton from "./dashboard/MessagesRequestSkeleton"
 import AchievementsandReccomendations from "./dashboard/AchievementsandReccomendations"
 import AchievementsandReccomendationsSkeleton from "./dashboard/AchievementsandReccomendationsSkeleton"
+import type { Request } from "@/components/dashboard/MessagesRequest"
 
 // Mock messages/requests
-const incomingRequests = [
-  {
-    id: "1",
-    type: "collaboration",
-    from: "Sarah Chen",
-    avatar: "/placeholder.svg?height=32&width=32",
-    project: "F1 Analytics Dashboard",
-    message: "Would love to collaborate on data visualization!",
-    time: "2 hours ago",
-  },
-  {
-    id: "2",
-    type: "message",
-    from: "Mike Rodriguez",
-    avatar: "/placeholder.svg?height=32&width=32",
-    project: "IoT Controller",
-    message: "Great work on the smart home project!",
-    time: "1 day ago",
-  },
-]
-
-// Mock recommended projects
 const recommendedProjects = [
   {
     id: "1",
@@ -65,11 +44,68 @@ const recommendedProjects = [
   },
 ]
 
+type SupabaseMessage = {
+  id: string;
+  sender_id: string;
+  receiver_id: string;
+  content: string;
+  created_at: string;
+};
+
+type User = { id: string; username: string };
+
 export default function DashboardPage() {
-  const [activeTab, setActiveTab] = useState("overview");
   const userLoading = false;
-  const requests = incomingRequests;
+  const [incomingRequests, setIncomingRequests] = useState<Request[]>([]);
   const Reccomendations = recommendedProjects;
+
+  useEffect(() => {
+    fetch("/api/user")
+      .then(res => res.json())
+      .then(async (user: User) => {
+        if (user && user.id) {
+          const res = await fetch(`/api/messages?userId=${user.id}`);
+          const messages: SupabaseMessage[] = await res.json();
+          if (Array.isArray(messages)) {
+            const latest = messages
+              .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+            const uniqueBySender: SupabaseMessage[] = [];
+            const seenSenders = new Set<string>();
+            for (const msg of latest) {
+              if (!seenSenders.has(msg.sender_id)) {
+                uniqueBySender.push(msg);
+                seenSenders.add(msg.sender_id);
+              }
+              if (uniqueBySender.length === 3) break;
+            }
+
+            const senderIds = Array.from(new Set(uniqueBySender.map(msg => msg.sender_id)));
+            
+            let usernameMap: Record<string, string> = {};
+            if (senderIds.length > 0) {
+              const usersRes = await fetch(`/api/conversations?userId=${user.id}`); 
+              const users = await usersRes.json();
+              users.forEach((u: { id: string; username: string }) => {
+                usernameMap[u.id] = u.username;
+              });
+            }
+
+            const requests: Request[] = uniqueBySender.map((msg) => ({
+              id: msg.id,
+              type: "message",
+              from: usernameMap[msg.sender_id] || "Unknown User",
+              avatar: "/placeholder.svg",
+              project: "",
+              message: msg.content,
+              time: new Date(msg.created_at).toLocaleString(),
+            }));
+            setIncomingRequests(requests);
+          } else {
+            setIncomingRequests([]);
+          }
+        }
+      });
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">

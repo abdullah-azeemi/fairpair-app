@@ -93,14 +93,17 @@ export default function MessagesPage() {
   }, [currentUserId, recipientId]);
 
   useEffect(() => {
-    if (!recipientId) return;
+    if (!recipientId || recipientId === currentUserId) {
+      setRecipientUser(null);
+      return;
+    }
     const fetchRecipient = async () => {
       const res = await fetch(`/api/user?userId=${recipientId}`);
       const data = await res.json();
       if (res.ok && data && data.id) setRecipientUser(data);
     };
     fetchRecipient();
-  }, [recipientId]);
+  }, [recipientId, currentUserId]);
 
   useEffect(() => {
     if (!currentUserId) return;
@@ -181,7 +184,14 @@ export default function MessagesPage() {
                   Messages
                 </h1>
                 {recipientUser && (
-                  <span className="ml-4 text-sm text-gray-500">Chatting with: <b>{recipientUser.username}</b></span>
+                  <span className="ml-4 text-sm text-gray-500">
+                    Chatting with: <b>{recipientUser.username}</b>
+                  </span>
+                )}
+                {recipientId === currentUserId && (
+                  <span className="ml-4 text-sm text-gray-500">
+                    You cannot chat with yourself.
+                  </span>
                 )}
               </div>
             </CardHeader>
