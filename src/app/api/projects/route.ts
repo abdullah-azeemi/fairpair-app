@@ -7,6 +7,7 @@ export async function GET() {
   const { data: projects, error } = await supabase
     .from("projects")
     .select("id, title, description, skills_needed, created_at, status, author_id")
+    .eq("status", "open")
     .order("created_at", { ascending: false });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   const mapped = (projects || []).map((p) => ({

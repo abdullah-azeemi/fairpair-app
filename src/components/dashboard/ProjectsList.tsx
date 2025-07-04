@@ -6,11 +6,12 @@ import {
   Plus,
   Eye,
   Users,
-  MoreHorizontal,
   Clock,
+  Trash2,
+  Archive,
 } from "lucide-react"
 import Link from "next/link"
-import useSWR from "swr"
+import useSWR , {mutate} from "swr"
 import ProjectListSkeleton from "./ProjectListSkeleton"
 
 export default function ProjectList(){
@@ -22,6 +23,17 @@ export default function ProjectList(){
   if (error) return <div className="text-red-500">Failed to Load Projects</div>
   if (!data) return null;
   if (!Array.isArray(data)) return <div className="text-red-500">No projects found or error loading projects.</div>;
+
+  const handleDelete = async (projectId: string) => {
+    if (!confirm("Are you sure you want to delete this project?")) return;
+    await fetch(`/api/projects/${projectId}`, { method: "DELETE" });
+    mutate('/api/projects/user');
+  };
+
+  const handleArchive = async (projectId: string) => {
+    await fetch(`/api/projects/${projectId}/archive`, { method: "PATCH" });
+    mutate('/api/projects/user');
+  };
 
   return <div>
     <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
@@ -85,9 +97,24 @@ export default function ProjectList(){
                           </span>
                         </div>
                       </div>
-                      <Button variant="ghost" size="sm">
-                        <MoreHorizontal size={16} />
-                      </Button>
+                      <div className="flex flex-col gap-2 sm:flex-row sm:gap-2">
+                        <Button
+                          variant="destructive"
+                          size="icon"
+                          aria-label="Delete"
+                          onClick={() => handleDelete(project.id)}
+                        >
+                          <Trash2 size={16} />
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="icon"
+                          aria-label="Archive"
+                          onClick={() => handleArchive(project.id)}
+                        >
+                          <Archive size={16} />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 ))}

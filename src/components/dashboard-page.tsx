@@ -15,8 +15,8 @@ import MessagesRequestSkeleton from "./dashboard/MessagesRequestSkeleton"
 import AchievementsandReccomendations from "./dashboard/AchievementsandReccomendations"
 import AchievementsandReccomendationsSkeleton from "./dashboard/AchievementsandReccomendationsSkeleton"
 import type { Request } from "@/components/dashboard/MessagesRequest"
-
 import type { RecommendedProject } from "./dashboard/AchievementsandReccomendations"
+import { signOut } from "next-auth/react"
 
 type SupabaseMessage = {
   id: string;
@@ -142,6 +142,7 @@ export default function DashboardPage() {
                   Post Project
                 </Button>
               </Link>
+              <Button variant="outline" className="gap-2" onClick={() => signOut({ callbackUrl: "/login" })}>Logout</Button>
             </div>
           </div>
         </div>
