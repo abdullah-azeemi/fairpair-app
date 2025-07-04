@@ -31,7 +31,6 @@ export default function AchievementsandRequest({ recommendedProjects }: { recomm
   const fetcher = (url: string) => fetch(url).then(res => res.json());
   const { data: achievements, error, isLoading } = useSWR('/api/achievements', fetcher);
 
-  // Map earned achievements for quick lookup
   const earned = new Set((achievements || []).map((a: any) => a.type));
 
   return (
@@ -68,25 +67,41 @@ export default function AchievementsandRequest({ recommendedProjects }: { recomm
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {recommendedProjects.map((project: RecommendedProject) => (
-            <div
+          {recommendedProjects.map((project: RecommendedProject & { matchedSkills?: string[] }) => (
+            <Link
               key={project.id}
-              className="p-3 border border-gray-200 rounded-lg hover:shadow-md transition-shadow cursor-pointer"
+              href={`/projects/${project.id}`}
+              className="block"
             >
-              <h4 className="font-medium text-sm text-gray-900 mb-1">{project.title}</h4>
-              <p className="text-xs text-gray-600 mb-2">by {project.author}</p>
-              <div className="flex flex-wrap gap-1 mb-2">
-                {project.skills.slice(0, 3).map((skill: string) => (
-                  <Badge key={skill} variant="outline" className="text-xs">
-                    {skill}
-                  </Badge>
-                ))}
+              <div className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow cursor-pointer bg-white/90 mb-4">
+                <h4 className="font-semibold text-mb text-gray-900 mb-1">{project.title}</h4>
+                <p className="text-xs text-gray-500 mb-3">by {project.author}</p>
+                <div className="flex flex-wrap gap-1 mb-1">
+                  { project.skills && project.skills.slice(0, 3).map((skill: string) => (
+                    <Badge key={skill} variant="outline" className="text-xs">
+                      {skill}
+                    </Badge>
+                  ))}
+                </div>
+                {project.matchedSkills && project.matchedSkills.length > 0 && (
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xs text-green-700 flex items-center">
+                      Matched skills:
+                    </span>
+                    <div className="flex flex-wrap gap-1">
+                      {project.matchedSkills.map((skill: string) => (
+                        <Badge key={skill} variant="secondary" className="text-xs bg-green-100 text-green-800 border-green-300">
+                          {skill}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <div className="flex items-center justify-between text-xs text-gray-400 mt-2">
+                  <span>{project.matchingSkills} skill{project.matchingSkills !== 1 && 's'} match</span>
+                </div>
               </div>
-              <div className="flex items-center justify-between text-xs text-gray-500">
-                <span>{project.matchingSkills} skills match</span>
-                <span>{project.timeAgo}</span>
-              </div>
-            </div>
+            </Link>
           ))}
           <Link href="/projects">
             <Button variant="outline" className="w-full" size="sm">

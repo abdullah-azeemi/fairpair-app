@@ -16,33 +16,7 @@ import AchievementsandReccomendations from "./dashboard/AchievementsandReccomend
 import AchievementsandReccomendationsSkeleton from "./dashboard/AchievementsandReccomendationsSkeleton"
 import type { Request } from "@/components/dashboard/MessagesRequest"
 
-// Mock messages/requests
-const recommendedProjects = [
-  {
-    id: "1",
-    title: "Voice Assistant AI",
-    author: "Emma Wilson",
-    skills: ["Python", "AI/ML", "React"],
-    matchingSkills: 3,
-    timeAgo: "5 hours ago",
-  },
-  {
-    id: "2",
-    title: "Blockchain Voting App",
-    author: "David Park",
-    skills: ["React", "Web3", "Node.js"],
-    matchingSkills: 2,
-    timeAgo: "1 day ago",
-  },
-  {
-    id: "3",
-    title: "Educational Game Platform",
-    author: "Lisa Zhang",
-    skills: ["React", "Node.js", "AI/ML"],
-    matchingSkills: 3,
-    timeAgo: "3 days ago",
-  },
-]
+import type { RecommendedProject } from "./dashboard/AchievementsandReccomendations"
 
 type SupabaseMessage = {
   id: string;
@@ -57,7 +31,8 @@ type User = { id: string; username: string };
 export default function DashboardPage() {
   const userLoading = false;
   const [incomingRequests, setIncomingRequests] = useState<Request[]>([]);
-  const Reccomendations = recommendedProjects;
+  const [recommendations, setRecommendations] = useState<RecommendedProject[]>([]);
+  const [recommendationsLoading, setRecommendationsLoading] = useState(true);
 
   useEffect(() => {
     fetch("/api/user")
@@ -79,16 +54,12 @@ export default function DashboardPage() {
               if (uniqueBySender.length === 3) break;
             }
 
-            const senderIds = Array.from(new Set(uniqueBySender.map(msg => msg.sender_id)));
-            
-            let usernameMap: Record<string, string> = {};
-            if (senderIds.length > 0) {
-              const usersRes = await fetch(`/api/conversations?userId=${user.id}`); 
-              const users = await usersRes.json();
-              users.forEach((u: { id: string; username: string }) => {
-                usernameMap[u.id] = u.username;
-              });
-            }
+            const usersRes = await fetch(`/api/conversations?userId=${user.id}`); 
+            const users = await usersRes.json();
+            const usernameMap: Record<string, string> = {};
+            users.forEach((u: { id: string; username: string }) => {
+              usernameMap[u.id] = u.username;
+            });
 
             const requests: Request[] = uniqueBySender.map((msg) => ({
               id: msg.id,
@@ -105,6 +76,48 @@ export default function DashboardPage() {
           }
         }
       });
+  }, []);
+
+  
+  useEffect(() => {
+    setRecommendationsLoading(true);
+    (async () => {
+     
+      const recRes = await fetch("/api/recommendations");
+      const data: RecommendedProject[] = await recRes.json();
+      if (!Array.isArray(data) || data.length === 0) {
+        setRecommendations([]);
+        setRecommendationsLoading(false);
+        return;
+      }
+      const userRes = await fetch("/api/user");
+      const user = await userRes.json();
+      const userSkills = Array.isArray(user.skills)
+        ? user.skills
+        : typeof user.skills === "string"
+          ? user.skills.split(",").map((s: string) => s.trim())
+          : [];
+      
+      const authorIds = Array.from(new Set(data.map(p => p.author_id)));
+      let authorMap: Record<string, string> = {};
+      for (const id of authorIds) {
+        const res = await fetch(`/api/user?userId=${id}`);
+        const author = await res.json();
+        if (author && author.username) {
+          authorMap[id] = author.username;
+        }
+      }
+      
+      const projectsWithAuthors = data.map((project: any) => ({
+        ...project,
+        author: authorMap[project.author_id] || "Unknown User",
+        matchedSkills: Array.isArray(project.skills_needed)
+          ? project.skills_needed.filter((skill: string) => userSkills.includes(skill)).slice(0, 3)
+          : [],
+      }));
+      setRecommendations(projectsWithAuthors);
+      setRecommendationsLoading(false);
+    })();
   }, []);
 
   return (
@@ -162,7 +175,11 @@ export default function DashboardPage() {
             
             {/* Collaboration Badges and Reccomendations */}
               <div>
-                {userLoading? <AchievementsandReccomendationsSkeleton />: <AchievementsandReccomendations recommendedProjects={Reccomendations} />}
+                {recommendationsLoading ? (
+                  <AchievementsandReccomendationsSkeleton />
+                ) : (
+                  <AchievementsandReccomendations recommendedProjects={recommendations} />
+                )}
               </div>
           
           </div>

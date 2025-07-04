@@ -11,14 +11,15 @@ const supabase = createClient(
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  const userId = searchParams.get("userId");
-  if (!userId) return NextResponse.json({ error: "Missing userId" }, { status: 400 });
+  const user1 = searchParams.get("user1");
+  const user2 = searchParams.get("user2");
+  if (!user1 || !user2) return NextResponse.json({ error: "Missing user ids" }, { status: 400 });
 
   const { data, error } = await supabase
     .from("messages")
     .select("id, sender_id, receiver_id, content, created_at")
-    .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
-    .order("created_at", { ascending: false });
+    .or(`and(sender_id.eq.${user1},receiver_id.eq.${user2}),and(sender_id.eq.${user2},receiver_id.eq.${user1})`)
+    .order("created_at", { ascending: true });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json(data);
