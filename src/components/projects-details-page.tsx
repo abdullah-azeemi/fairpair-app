@@ -1,12 +1,18 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { TagInput } from "@/components/ui/tag-input"
 import {
   ArrowLeft,
   Users,
@@ -18,84 +24,78 @@ import {
   Github,
   Linkedin,
   Mail,
-  Globe,
   Target,
   Zap,
   Award,
+  Edit,
+  Plus,
+  X,
+  Search,
+  Check,
+  Trash2,
+  UserPlus,
+  Settings,
+  Code,
+  Calendar,
 } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { formatDistanceToNow } from "date-fns"
 
-const projectData = {
-  id: "1",
-  title: "AI-Powered Resume Builder",
-  description: `A comprehensive resume builder that uses artificial intelligence to help users create professional, ATS-friendly resumes. The platform analyzes job descriptions and suggests relevant skills, experiences, and keywords to include.
 
-Key features include:
-- AI-powered content suggestions
-- Multiple professional templates
-- ATS optimization
-- Real-time preview
-- Export to PDF/Word
-- Integration with LinkedIn
+interface ProjectMember {
+  id: string
+  name: string
+  username: string
+  role: string
+  joinedAt: string
+  bio: string
+  skills: string[]
+}
 
-We're looking for passionate developers who want to help job seekers land their dream jobs. This is a great opportunity to work with cutting-edge AI technology while making a real impact on people's careers.`,
-  author: {
-    name: "Abdullah Musharaf",
-    username: "abdullah",
-    avatar: "/placeholder.svg?height=60&width=60",
-    bio: "Full-stack developer passionate about AI and helping people succeed in their careers.",
-    skills: ["React", "Node.js", "AI/ML", "Python", "PostgreSQL"],
-    joinedDate: "March 2024",
-    projectsCount: 8,
-    collaborationsCount: 15,
-    links: {
-      github: "https://github.com/abdullah",
-      linkedin: "https://linkedin.com/in/abdullah",
-      email: "abdullah@example.com",
-      portfolio: "https://abdullah.dev",
-    },
-  },
-  category: "AI/ML",
-  skillsNeeded: ["React", "Node.js", "Python", "AI/ML", "PostgreSQL", "Tailwind CSS"],
-  timeline: "3-6 months",
-  teamSize: "4-5 people",
-  projectType: "Open Source",
-  experienceLevel: "Intermediate",
-  lookingForCollaborators: true,
-  createdAt: "3 days ago",
-  updatedAt: "1 day ago",
-  views: 234,
-  interested: 18,
-  status: "Active",
-  progress: 25,
-  currentTeam: [
-    {
-      name: "Abdullah Musharaf",
-      username: "abdullah",
-      role: "Project Lead",
-      avatar: "/placeholder.svg?height=32&width=32",
-    },
-    {
-      name: "Sarah Chen",
-      username: "sarahc",
-      role: "Frontend Developer",
-      avatar: "/placeholder.svg?height=32&width=32",
-    },
-    {
-      name: "Mike Rodriguez",
-      username: "mikero",
-      role: "AI Engineer",
-      avatar: "/placeholder.svg?height=32&width=32",
-    },
-  ],
-  milestones: [
-    { title: "Project Setup & Planning", completed: true, date: "Week 1" },
-    { title: "AI Model Integration", completed: true, date: "Week 2-3" },
-    { title: "Frontend Development", completed: false, date: "Week 4-6", current: true },
-    { title: "Backend API Development", completed: false, date: "Week 7-9" },
-    { title: "Testing & Deployment", completed: false, date: "Week 10-12" },
-  ],
-  techStack: ["React", "Next.js", "Node.js", "Express", "PostgreSQL", "OpenAI API", "Tailwind CSS", "Vercel"],
+interface Milestone {
+  id: string
+  title: string
+  completed: boolean
+  date: string
+  current?: boolean
+}
+
+interface ProjectAuthor {
+  id: string
+  name: string
+  username: string
+  bio: string
+  skills: string[]
+  joinedDate: string
+  links: {
+    github?: string
+    linkedin?: string
+    email?: string
+  }
+}
+
+interface ProjectData {
+  id: string
+  title: string
+  description: string
+  author: ProjectAuthor
+  category: string
+  skillsNeeded: string[]
+  timeline: string
+  teamSize: string
+  projectType: string
+  experienceLevel: string
+  lookingForCollaborators: boolean
+  createdAt: string
+  updatedAt: string
+  views: number
+  interested: number
+  status: string
+  progress: number
+  currentTeam: ProjectMember[]
+  milestones: Milestone[]
+  techStack: string[]
 }
 
 interface ProjectDetailsPageProps {
@@ -104,20 +104,314 @@ interface ProjectDetailsPageProps {
   }
 }
 
-export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) {
-  const [isInterested, setIsInterested] = useState(false)
+interface User {
+  id: string
+  name: string
+  username: string
+  bio: string
+  skills: string[]
+}
 
-  const handleInterest = () => {
-    setIsInterested(!isInterested)
-    // Handle interest toggle
+export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) {
+  console.log("params.id", params.id)
+  const router = useRouter()
+  const [projectData, setProjectData] = useState<ProjectData | null>(null)
+  const [isInterested, setIsInterested] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isOwner, setIsOwner] = useState(false)
+  const [currentUser, setCurrentUser] = useState<any>(null)
+  
+  const [editMode, setEditMode] = useState(false)
+  const [editData, setEditData] = useState<Partial<ProjectData>>({})
+  
+  const [showAddMember, setShowAddMember] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [searchResults, setSearchResults] = useState<User[]>([])
+  const [selectedUser, setSelectedUser] = useState<User | null>(null)
+  const [newMemberRole, setNewMemberRole] = useState("")
+  
+  const [showProgressModal, setShowProgressModal] = useState(false)
+  const [progressData, setProgressData] = useState({
+    progress: 0,
+    milestones: [] as Milestone[]
+  })
+
+  useEffect(() => {
+    if (params.id) {
+      fetchCurrentUser()
+    }
+  }, [params.id])
+
+  useEffect(() => {
+    if (params.id && currentUser) {
+      fetchProjectData()
+      
+      fetch(`/api/projects/${params.id}/view`, { method: 'POST' }).catch(console.error)
+    }
+  }, [params.id, currentUser])
+
+  if (!params?.id) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-red-600 mb-2">Invalid project URL</h2>
+          <p className="text-gray-600 mb-4">No project ID provided. Please check the link or go back to the project list.</p>
+        </div>
+      </div>
+    )
+  }
+
+  const fetchCurrentUser = async () => {
+    try {
+      console.log("Fetching current user...")
+      const response = await fetch('/api/user');
+      if (response.ok) {
+        const user = await response.json();
+        setCurrentUser(user);
+        console.log("Current user loaded:", user);
+        checkInterestStatus(user.id)
+      } else {
+        console.error("Failed to fetch user:", response.status, response.statusText);
+      }
+    } catch (error) {
+      console.error("Error fetching current user:", error);
+    }
+  };
+
+  const fetchProjectData = async () => {
+    try {
+      console.log("Fetching project with ID:", params.id);
+      const response = await fetch(`/api/projects/${params.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setProjectData(data);
+        setIsOwner(currentUser?.id === data.author.id);
+        setEditData(data);
+        setProgressData({
+          progress: data.progress || 0,
+          milestones: data.milestones || []
+        });
+        console.log("Project data loaded:", data);
+      } else {
+        console.error("Failed to fetch project:", response.status, response.statusText);
+      }
+    } catch (error) {
+      console.error("Error fetching project:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const checkInterestStatus = async (userId: string) => {
+    if (!userId) return
+    try {
+      const response = await fetch(`/api/projects/${params.id}/interest`)
+      if (response.ok) {
+        const data = await response.json()
+        setIsInterested(data.isInterested)
+      }
+    } catch (error) {
+      console.error("Error checking interest status:", error)
+    }
+  }
+
+  const handleInterest = async () => {
+    if (!currentUser?.id) {
+      router.push("/login")
+      return
+    }
+
+    try {
+      const method = isInterested ? "DELETE" : "POST"
+      const response = await fetch(`/api/projects/${params.id}/interest`, { method })
+      if (response.ok) {
+        setIsInterested(!isInterested)
+        if (projectData) {
+          setProjectData({
+            ...projectData,
+            interested: isInterested ? projectData.interested - 1 : projectData.interested + 1
+          })
+        }
+      }
+    } catch (error) {
+      console.error("Error updating interest:", error)
+    }
   }
 
   const handleMessage = () => {
-    // Navigate to messages or open chat
+    if (!currentUser?.id) {
+      router.push("/login")
+      return
+    }
+    router.push(`/messages?recipient=${projectData?.author.id}`)
   }
 
   const handleJoinRequest = () => {
-    // Handle join request
+    if (!currentUser?.id) {
+      router.push("/login")
+      return
+    }
+    router.push(`/messages?recipient=${projectData?.author.id}&project=${params.id}`)
+  }
+
+  const searchUsers = async (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([])
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/users/search?q=${query}&projectId=${params.id}&excludeTeam=true`)
+      if (response.ok) {
+        const users = await response.json()
+        setSearchResults(users)
+      }
+    } catch (error) {
+      console.error("Error searching users:", error)
+    }
+  }
+
+  const addTeamMember = async () => {
+    if (!selectedUser || !newMemberRole) return
+
+    try {
+      const response = await fetch(`/api/projects/${params.id}/team`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          memberId: selectedUser.id,
+          role: newMemberRole
+        })
+      })
+
+      if (response.ok) {
+        setShowAddMember(false)
+        setSelectedUser(null)
+        setNewMemberRole("")
+        setSearchQuery("")
+        setSearchResults([])
+        fetchProjectData() // Refresh project data
+      }
+    } catch (error) {
+      console.error("Error adding team member:", error)
+    }
+  }
+
+  const removeTeamMember = async (memberId: string) => {
+    if (!confirm("Are you sure you want to remove this team member?")) return
+
+    try {
+      const response = await fetch(`/api/projects/${params.id}/team?memberId=${memberId}`, {
+        method: "DELETE"
+      })
+
+      if (response.ok) {
+        fetchProjectData() // Refresh project data
+      }
+    } catch (error) {
+      console.error("Error removing team member:", error)
+    }
+  }
+
+  // Helper function to convert camelCase to snake_case
+  const toSnakeCase = (obj: any): any => {
+    const snakeCaseObj: any = {}
+    Object.keys(obj).forEach(key => {
+      const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`)
+      snakeCaseObj[snakeKey] = obj[key]
+    })
+    return snakeCaseObj
+  }
+
+  const updateProject = async () => {
+    try {
+      // Convert camelCase to snake_case for backend compatibility
+      const snakeCaseData = toSnakeCase(editData)
+      
+      const response = await fetch(`/api/projects/${params.id}/update`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(snakeCaseData)
+      })
+
+      if (response.ok) {
+        setEditMode(false)
+        fetchProjectData() // Refresh project data
+      } else {
+        console.error("Failed to update project:", response.status, response.statusText)
+      }
+    } catch (error) {
+      console.error("Error updating project:", error)
+    }
+  }
+
+  const updateProgress = async () => {
+    try {
+      const response = await fetch(`/api/projects/${params.id}/update`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          progress: progressData.progress,
+          milestones: progressData.milestones
+        })
+      })
+
+      if (response.ok) {
+        setShowProgressModal(false)
+        fetchProjectData() // Refresh project data
+      }
+    } catch (error) {
+      console.error("Error updating progress:", error)
+    }
+  }
+
+  const addMilestone = () => {
+    const newMilestone: Milestone = {
+      id: Date.now().toString(),
+      title: "",
+      completed: false,
+      date: ""
+    }
+    setProgressData({
+      ...progressData,
+      milestones: [...progressData.milestones, newMilestone]
+    })
+  }
+
+  const updateMilestone = (index: number, field: keyof Milestone, value: any) => {
+    const updatedMilestones = [...progressData.milestones]
+    updatedMilestones[index] = { ...updatedMilestones[index], [field]: value }
+    setProgressData({ ...progressData, milestones: updatedMilestones })
+  }
+
+  const removeMilestone = (index: number) => {
+    const updatedMilestones = progressData.milestones.filter((_, i) => i !== index)
+    setProgressData({ ...progressData, milestones: updatedMilestones })
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading project details...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!projectData) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Project Not Found</h2>
+          <p className="text-gray-600 mb-4">The project you're looking for doesn't exist or has been removed.</p>
+          <Link href="/projects">
+            <Button>Back to Projects</Button>
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -131,6 +425,96 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
               Back to Projects
             </Link>
             <div className="flex items-center space-x-2">
+              {isOwner && (
+                <Dialog open={editMode} onOpenChange={setEditMode}>
+                  <DialogTrigger asChild>
+                    <Button variant="ghost" size="sm">
+                      <Edit size={16} className="mr-2" />
+                      Edit
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>Edit Project</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="title">Title</Label>
+                        <Input
+                          id="title"
+                          value={editData.title || ""}
+                          onChange={(e) => setEditData({ ...editData, title: e.target.value })}
+                        />
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="description">Description</Label>
+                        <Textarea
+                          id="description"
+                          value={editData.description || ""}
+                          onChange={(e) => setEditData({ ...editData, description: e.target.value })}
+                          rows={4}
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="flex flex-col gap-2">
+                          <Label htmlFor="timeline">Timeline</Label>
+                          <Select value={editData.timeline} onValueChange={(value) => setEditData({ ...editData, timeline: value })}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select timeline" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="1-2 weeks">1-2 weeks</SelectItem>
+                              <SelectItem value="1 month">1 month</SelectItem>
+                              <SelectItem value="2-3 months">2-3 months</SelectItem>
+                              <SelectItem value="3-6 months">3-6 months</SelectItem>
+                              <SelectItem value="6+ months">6+ months</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <Label htmlFor="teamSize">Team Size</Label>
+                          <Select value={editData.teamSize} onValueChange={(value) => setEditData({ ...editData, teamSize: value })}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select team size" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Just me">Just me</SelectItem>
+                              <SelectItem value="2-3 people">2-3 people</SelectItem>
+                              <SelectItem value="4-5 people">4-5 people</SelectItem>
+                              <SelectItem value="6-10 people">6-10 people</SelectItem>
+                              <SelectItem value="10+ people">10+ people</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="skillsNeeded">Skills Needed</Label>
+                        <TagInput
+                          value={editData.skillsNeeded || []}
+                          onChange={(tags) => setEditData({ ...editData, skillsNeeded: tags })}
+                          placeholder="Type a skill and press Enter..."
+                        />
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="techStack">Tech Stack</Label>
+                        <TagInput
+                          value={editData.techStack || []}
+                          onChange={(tags) => setEditData({ ...editData, techStack: tags })}
+                          placeholder="Type a technology and press Enter..."
+                        />
+                      </div>
+                      <div className="flex justify-end space-x-2">
+                        <Button variant="outline" onClick={() => setEditMode(false)}>
+                          Cancel
+                        </Button>
+                        <Button onClick={updateProject}>
+                          Save Changes
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              )}
               <Button variant="ghost" size="sm">
                 <Share2 size={16} className="mr-2" />
                 Share
@@ -170,7 +554,7 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
                     <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
                       <span className="flex items-center">
                         <Clock size={14} className="mr-1" />
-                        {projectData.createdAt}
+                        {formatDistanceToNow(new Date(projectData.createdAt), { addSuffix: true })}
                       </span>
                       <span className="flex items-center">
                         <Eye size={14} className="mr-1" />
@@ -223,13 +607,15 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
 
                 {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row gap-3">
-                  <Button
-                    onClick={handleJoinRequest}
-                    className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
-                  >
-                    <Users size={16} className="mr-2" />
-                    Request to Join
-                  </Button>
+                  {!isOwner && (
+                    <Button
+                      onClick={handleJoinRequest}
+                      className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+                    >
+                      <Users size={16} className="mr-2" />
+                      Request to Join
+                    </Button>
+                  )}
                   <Button onClick={handleMessage} variant="outline" className="flex-1">
                     <MessageCircle size={16} className="mr-2" />
                     Message Owner
@@ -261,14 +647,92 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
                   </TabsContent>
 
                   <TabsContent value="team" className="space-y-4">
-                    <h3 className="font-semibold text-gray-900 mb-4">
-                      Current Team ({projectData.currentTeam.length})
-                    </h3>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-semibold text-gray-900">
+                        Current Team ({projectData.currentTeam.length})
+                      </h3>
+                      {isOwner && (
+                        <Dialog open={showAddMember} onOpenChange={setShowAddMember}>
+                          <DialogTrigger asChild>
+                            <Button size="sm">
+                              <UserPlus size={16} className="mr-2" />
+                              Add Member
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-md">
+                            <DialogHeader>
+                              <DialogTitle>Add Team Member</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                              <div>
+                                <Label htmlFor="search">Search Users</Label>
+                                <div className="relative">
+                                  <Search size={16} className="absolute left-3 top-3 text-gray-400" />
+                                  <Input
+                                    id="search"
+                                    placeholder="Search by name or username..."
+                                    value={searchQuery}
+                                    onChange={(e) => {
+                                      setSearchQuery(e.target.value)
+                                      searchUsers(e.target.value)
+                                    }}
+                                    className="pl-10"
+                                  />
+                                </div>
+                              </div>
+                              {searchResults.length > 0 && (
+                                <div className="max-h-40 overflow-y-auto space-y-2">
+                                  {searchResults.map((user) => (
+                                    <div
+                                      key={user.id}
+                                      className={`p-2 rounded border cursor-pointer ${
+                                        selectedUser?.id === user.id ? "border-blue-500 bg-blue-50" : "border-gray-200"
+                                      }`}
+                                      onClick={() => setSelectedUser(user)}
+                                    >
+                                      <div className="font-medium">{user.name}</div>
+                                      <div className="text-sm text-gray-600">@{user.username}</div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                              {selectedUser && (
+                                <div>
+                                  <Label htmlFor="role">Role</Label>
+                                  <Select value={newMemberRole} onValueChange={setNewMemberRole}>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select role" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="Frontend Developer">Frontend Developer</SelectItem>
+                                      <SelectItem value="Backend Developer">Backend Developer</SelectItem>
+                                      <SelectItem value="Full Stack Developer">Full Stack Developer</SelectItem>
+                                      <SelectItem value="UI/UX Designer">UI/UX Designer</SelectItem>
+                                      <SelectItem value="DevOps Engineer">DevOps Engineer</SelectItem>
+                                      <SelectItem value="Data Scientist">Data Scientist</SelectItem>
+                                      <SelectItem value="Project Manager">Project Manager</SelectItem>
+                                      <SelectItem value="Other">Other</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              )}
+                              <div className="flex justify-end space-x-2">
+                                <Button variant="outline" onClick={() => setShowAddMember(false)}>
+                                  Cancel
+                                </Button>
+                                <Button onClick={addTeamMember} disabled={!selectedUser || !newMemberRole}>
+                                  Add Member
+                                </Button>
+                              </div>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      )}
+                    </div>
                     <div className="space-y-3">
                       {projectData.currentTeam.map((member, index) => (
                         <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
                           <Avatar className="w-10 h-10">
-                            <AvatarImage src={member.avatar || "/placeholder.svg"} />
                             <AvatarFallback>
                               {member.name
                                 .split(" ")
@@ -282,12 +746,116 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
                               @{member.username} • {member.role}
                             </p>
                           </div>
+                          {isOwner && member.id !== currentUser?.id && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeTeamMember(member.id)}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 size={16} />
+                            </Button>
+                          )}
                         </div>
                       ))}
+                      {projectData.currentTeam.length === 0 && (
+                        <div className="text-center py-8 text-gray-500">
+                          <Users size={48} className="mx-auto mb-4 text-gray-300" />
+                          <p>No team members yet</p>
+                          {isOwner && (
+                            <p className="text-sm">Click "Add Member" to start building your team</p>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </TabsContent>
 
                   <TabsContent value="progress" className="space-y-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-semibold text-gray-900">Project Progress</h3>
+                      {isOwner && (
+                        <Dialog open={showProgressModal} onOpenChange={setShowProgressModal}>
+                          <DialogTrigger asChild>
+                            <Button size="sm">
+                              <Settings size={16} className="mr-2" />
+                              Update Progress
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-2xl">
+                            <DialogHeader>
+                              <DialogTitle>Update Project Progress</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                              <div className="flex flex-col gap-4">
+                                <Label htmlFor="progress">Overall Progress (%)</Label>
+                                <Input
+                                  id="progress"
+                                  type="text"
+                                  value={progressData.progress === 0 ? "" : progressData.progress.toString()}
+                                  onChange={(e) => {
+                                    const value = e.target.value
+                                    const numValue = value === "" ? 0 : parseInt(value) || 0
+                                    setProgressData({ ...progressData, progress: numValue })
+                                  }}
+                                  placeholder="Enter progress percentage"
+                                />
+                              </div>
+                              <div>
+                                <div className="flex items-center justify-between mb-2">
+                                  <Label>Milestones</Label>
+                                  <Button size="sm" onClick={addMilestone}>
+                                    <Plus size={16} className="mr-2" />
+                                    Add Milestone
+                                  </Button>
+                                </div>
+                                <div className="space-y-2">
+                                  {progressData.milestones.map((milestone, index) => (
+                                    <div key={milestone.id} className="flex items-center space-x-2 p-2 border rounded">
+                                      <Input
+                                        placeholder="Milestone title"
+                                        value={milestone.title}
+                                        onChange={(e) => updateMilestone(index, "title", e.target.value)}
+                                        className="flex-1"
+                                      />
+                                      <Input
+                                        placeholder="Date"
+                                        value={milestone.date}
+                                        onChange={(e) => updateMilestone(index, "date", e.target.value)}
+                                        className="w-32"
+                                      />
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => updateMilestone(index, "completed", !milestone.completed)}
+                                        className={milestone.completed ? "text-green-600" : "text-gray-400"}
+                                      >
+                                        <Check size={16} />
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => removeMilestone(index)}
+                                        className="text-red-600"
+                                      >
+                                        <X size={16} />
+                                      </Button>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                              <div className="flex justify-end space-x-2">
+                                <Button variant="outline" onClick={() => setShowProgressModal(false)}>
+                                  Cancel
+                                </Button>
+                                <Button onClick={updateProgress}>
+                                  Save Progress
+                                </Button>
+                              </div>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      )}
+                    </div>
                     <div className="mb-4">
                       <div className="flex items-center justify-between mb-2">
                         <h3 className="font-semibold text-gray-900">Overall Progress</h3>
@@ -301,7 +869,7 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
                       </div>
                     </div>
                     <div className="space-y-3">
-                      {projectData.milestones.map((milestone, index) => (
+                      { projectData.milestones && projectData.milestones.map((milestone, index) => (
                         <div key={index} className="flex items-center space-x-3">
                           <div
                             className={`w-4 h-4 rounded-full border-2 ${
@@ -322,17 +890,35 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
                           </div>
                         </div>
                       ))}
+                      {projectData.milestones && projectData.milestones.length === 0 && (
+                        <div className="text-center py-8 text-gray-500">
+                          <Calendar size={48} className="mx-auto mb-4 text-gray-300" />
+                          <p>No milestones defined yet</p>
+                          {isOwner && (
+                            <p className="text-sm">Click "Update Progress" to add milestones</p>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </TabsContent>
 
                   <TabsContent value="tech" className="space-y-4">
                     <h3 className="font-semibold text-gray-900 mb-4">Technology Stack</h3>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                      {projectData.techStack.map((tech) => (
+                      {projectData.techStack && projectData.techStack.map((tech) => (
                         <div key={tech} className="p-3 bg-gray-50 rounded-lg text-center">
                           <p className="font-medium text-gray-900">{tech}</p>
                         </div>
                       ))}
+                      {projectData.techStack && projectData.techStack.length === 0 && (
+                        <div className="text-center py-8 text-gray-500 col-span-full">
+                          <Code size={48} className="mx-auto mb-4 text-gray-300" />
+                          <p>No tech stack defined yet</p>
+                          {isOwner && (
+                            <p className="text-sm">Click "Edit" to add your tech stack</p>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </TabsContent>
                 </CardContent>
@@ -350,7 +936,6 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
               <CardContent className="space-y-4">
                 <div className="flex items-center space-x-3">
                   <Avatar className="w-12 h-12">
-                    <AvatarImage src={projectData.author.avatar || "/placeholder.svg"} />
                     <AvatarFallback>
                       {projectData.author.name
                         .split(" ")
@@ -367,12 +952,8 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">Projects</span>
-                    <span className="font-medium">{projectData.author.projectsCount}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">Collaborations</span>
-                    <span className="font-medium">{projectData.author.collaborationsCount}</span>
+                    <span className="text-gray-600">Joined</span>
+                    <span className="font-medium">{projectData.author.joinedDate}</span>
                   </div>
                 </div>
 
@@ -387,18 +968,21 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
                 <Separator />
 
                 <div className="flex justify-between">
-                  <a href={projectData.author.links.github} className="text-gray-600 hover:text-gray-900">
-                    <Github size={18} />
-                  </a>
-                  <a href={projectData.author.links.linkedin} className="text-gray-600 hover:text-gray-900">
-                    <Linkedin size={18} />
-                  </a>
-                  <a href={`mailto:${projectData.author.links.email}`} className="text-gray-600 hover:text-gray-900">
-                    <Mail size={18} />
-                  </a>
-                  <a href={projectData.author.links.portfolio} className="text-gray-600 hover:text-gray-900">
-                    <Globe size={18} />
-                  </a>
+                  {projectData.author.links.github && (
+                    <a href={projectData.author.links.github} target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-gray-900">
+                      <Github size={18} />
+                    </a>
+                  )}
+                  {projectData.author.links.linkedin && (
+                    <a href={projectData.author.links.linkedin} target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-gray-900">
+                      <Linkedin size={18} />
+                    </a>
+                  )}
+                  {projectData.author.links.email && (
+                    <a href={`mailto:${projectData.author.links.email}`} className="text-gray-600 hover:text-gray-900">
+                      <Mail size={18} />
+                    </a>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -415,11 +999,11 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">Created</span>
-                  <span className="text-sm font-medium">{projectData.createdAt}</span>
+                  <span className="text-sm font-medium">{formatDistanceToNow(new Date(projectData.createdAt), { addSuffix: true })}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">Last Updated</span>
-                  <span className="text-sm font-medium">{projectData.updatedAt}</span>
+                  <span className="text-sm font-medium">{formatDistanceToNow(new Date(projectData.updatedAt), { addSuffix: true })}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">Team Members</span>

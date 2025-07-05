@@ -5,8 +5,9 @@ interface PageProps{
     id:string
   }
 }
-export default function page({params}: PageProps){
+export default async function page({params}: PageProps){
+  const resolvedParams = await params;
   return <div>
-    <ProjectDetailsPage params={params} />
+    <ProjectDetailsPage params={resolvedParams} />
   </div>
 }

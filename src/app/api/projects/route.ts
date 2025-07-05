@@ -57,6 +57,21 @@ export async function POST(req: Request) {
       }
     ]).select().single();
     if (error) throw error;
+
+    try {
+      await supabase.from("project_members").insert([
+        {
+          project_id: newProject.id,
+          user_id: userId,
+          role: "Owner",
+          status: "accepted",
+          joined_at: new Date().toISOString()
+        }
+      ]);
+    } catch (memberError) {
+      console.error("Error adding author to project team:", memberError);
+
+    }
     await supabase.from("activity").insert([
       {
         user_id: userId,

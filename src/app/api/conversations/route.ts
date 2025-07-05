@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth/[...nextauth]/route";
 
 console.log("SUPABASE_SERVICE_ROLE_KEY length:", process.env.SUPABASE_SERVICE_ROLE_KEY?.length);
 console.log("NEXT_PUBLIC_SUPABASE_URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
@@ -9,52 +11,57 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const userId = searchParams.get("userId");
-  console.log("userId", userId);
-  if (!userId) return NextResponse.json({ error: "Missing userId" }, { status: 400 });
-
-  // Log before querying messages
-  console.log("Querying messages for userId:", userId);
-
-  const { data: messages, error } = await supabase
-    .from("messages")
-    .select("sender_id, receiver_id")
-    .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`);
-
-  if (error) {
-    console.error("Error fetching messages:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+export async function GET(request: Request) {
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
+  if (!userId) {
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
-  console.log("Fetched messages:", messages);
 
-  const userIds = Array.from(
-    new Set(
-      (messages ?? [])
-        .map((msg: { sender_id: string; receiver_id: string }) =>
-          msg.sender_id === userId ? msg.receiver_id : msg.sender_id
-        )
-        .filter((id: string) => id !== userId)
-    )
-  );
-  console.log("userIds for conversation:", userIds);
+  const { searchParams } = new URL(request.url);
+  const currentUserId = searchParams.get("userId");
 
-  if (!userIds.length) return NextResponse.json([]);
-
-  // Log before querying users
-  console.log("Querying users with ids:", userIds);
-
-  const { data: users, error: userError } = await supabase
-    .from("users")
-    .select("id, username")
-    .in("id", userIds);
-
-  if (userError) {
-    console.error("Error fetching users:", userError);
-    return NextResponse.json({ error: userError.message }, { status: 500 });
+  if (!currentUserId || currentUserId !== userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
-  console.log("Fetched users:", users);
 
-  return NextResponse.json(users);
+  try {
+    // Get unique conversation partners from messages
+    const { data: conversations, error } = await supabase
+      .from("messages")
+      .select(`
+        sender_id,
+        receiver_id,
+        created_at,
+        sender:users!messages_sender_id_fkey(id, username),
+        receiver:users!messages_receiver_id_fkey(id, username)
+      `)
+      .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching conversations:", error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    // Get unique conversation partners
+    const conversationPartners = new Map();
+    
+    conversations?.forEach((msg: any) => {
+      const partnerId = msg.sender_id === userId ? msg.receiver_id : msg.sender_id;
+      const partner = msg.sender_id === userId ? msg.receiver : msg.sender;
+      
+      if (!conversationPartners.has(partnerId) && partnerId !== userId) {
+        conversationPartners.set(partnerId, {
+          id: partnerId,
+          username: partner?.username || "Unknown User"
+        });
+      }
+    });
+
+    return NextResponse.json(Array.from(conversationPartners.values()));
+  } catch (error) {
+    console.error("Error in conversations API:", error);
+    return NextResponse.json({ error: "Failed to fetch conversations" }, { status: 500 });
+  }
 }
