@@ -112,6 +112,22 @@ interface User {
   skills: string[]
 }
 
+const TIMELINE_OPTIONS = [
+  "1-2 weeks",
+  "1 month",
+  "2-3 months",
+  "3-6 months",
+  "6+ months",
+  "Ongoing"
+];
+const TEAM_SIZE_OPTIONS = [
+  "Just me",
+  "2-3 people",
+  "4-5 people",
+  "6-10 people",
+  "10+ people"
+];
+
 export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) {
   console.log("params.id", params.id)
   const router = useRouter()
@@ -463,11 +479,9 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
                               <SelectValue placeholder="Select timeline" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="1-2 weeks">1-2 weeks</SelectItem>
-                              <SelectItem value="1 month">1 month</SelectItem>
-                              <SelectItem value="2-3 months">2-3 months</SelectItem>
-                              <SelectItem value="3-6 months">3-6 months</SelectItem>
-                              <SelectItem value="6+ months">6+ months</SelectItem>
+                              {TIMELINE_OPTIONS.map((option) => (
+                                <SelectItem key={option} value={option}>{option}</SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         </div>
@@ -478,11 +492,9 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
                               <SelectValue placeholder="Select team size" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="Just me">Just me</SelectItem>
-                              <SelectItem value="2-3 people">2-3 people</SelectItem>
-                              <SelectItem value="4-5 people">4-5 people</SelectItem>
-                              <SelectItem value="6-10 people">6-10 people</SelectItem>
-                              <SelectItem value="10+ people">10+ people</SelectItem>
+                              {TEAM_SIZE_OPTIONS.map((option) => (
+                                <SelectItem key={option} value={option}>{option}</SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         </div>

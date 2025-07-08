@@ -13,6 +13,7 @@ import {
 import Link from "next/link"
 import useSWR , {mutate} from "swr"
 import ProjectListSkeleton from "./ProjectListSkeleton"
+import { formatDistanceToNow } from "date-fns"
 
 export default function ProjectList(){
 
@@ -85,7 +86,7 @@ export default function ProjectList(){
                         <div className="flex items-center gap-4 text-xs text-gray-500">
                           <span className="flex items-center">
                             <Clock size={12} className="mr-1" />
-                            {project.createdAt}
+                            {formatDistanceToNow(new Date(project.createdAt), { addSuffix: true })}
                           </span>
                           <span className="flex items-center">
                             <Eye size={12} className="mr-1" />
