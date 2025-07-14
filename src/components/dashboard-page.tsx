@@ -43,6 +43,7 @@ export default function DashboardPage() {
           const messages: SupabaseMessage[] = await res.json();
           if (Array.isArray(messages)) {
             const latest = messages
+              .filter(msg => msg.sender_id !== user.id)
               .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
             const uniqueBySender: SupabaseMessage[] = [];
             const seenSenders = new Set<string>();
@@ -59,6 +60,22 @@ export default function DashboardPage() {
             const usernameMap: Record<string, string> = {};
             users.forEach((u: { id: string; username: string }) => {
               usernameMap[u.id] = u.username;
+            });
+
+            const missingSenderIds = uniqueBySender
+              .map(msg => msg.sender_id)
+              .filter(id => !usernameMap[id]);
+
+            const missingUsers = await Promise.all(
+              missingSenderIds.map(id =>
+                fetch(`/api/user?userId=${id}`).then(res => res.json())
+              )
+            );
+
+            missingUsers.forEach(user => {
+              if (user && user.id && user.username) {
+                usernameMap[user.id] = user.username;
+              }
             });
 
             const requests: Request[] = uniqueBySender.map((msg) => ({
