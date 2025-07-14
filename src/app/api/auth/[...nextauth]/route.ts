@@ -25,6 +25,22 @@ export const authOptions = {
         const isValid = await verify(user.password, credentials.password);
         if (!isValid) return null;
 
+        const { data: existingAchievements } = await supabase
+          .from("achievements")
+          .select("id")
+          .eq("user_id", user.id)
+          .limit(1);
+
+        if (!existingAchievements || existingAchievements.length === 0) {
+          await supabase.from("achievements").insert([
+            {
+              user_id: user.id,
+              type: "interface_explorer",
+              awarded_at: new Date().toISOString(),
+            },
+          ]);
+        }
+
         return {
           id: user.id,
           name: user.name,

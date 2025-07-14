@@ -20,11 +20,11 @@ export type RecommendedProject = {
   timeAgo: string
 }
 
-const ACHIEVEMENT_BADGES = [
-  { type: 'first_project', label: 'Quick Starter', icon: <Zap size={24} className="mx-auto text-purple-600 mb-1" /> },
-  { type: 'colab_pro', label: 'Colab Pro', icon: <Users size={24} className="mx-auto text-blue-600 mb-1" /> },
-  { type: 'top_contributor', label: 'Top Contributor', icon: <Star size={24} className="mx-auto text-green-600 mb-1" /> },
-  { type: 'mentor', label: 'Mentor', icon: <Award size={24} className="mx-auto text-orange-600 mb-1" /> },
+const ICONS = [
+  <Zap key="zap" size={24} className="mx-auto text-purple-600 mb-1" />,
+  <Users key="users" size={24} className="mx-auto text-blue-600 mb-1" />,
+  <Star key="star" size={24} className="mx-auto text-green-600 mb-1" />,
+  <Award key="award" size={24} className="mx-auto text-orange-600 mb-1" />,
 ];
 
 export default function AchievementsandRequest({ recommendedProjects }: { recommendedProjects: RecommendedProject[] }) {
@@ -32,6 +32,8 @@ export default function AchievementsandRequest({ recommendedProjects }: { recomm
   const { data: achievements, error, isLoading } = useSWR('/api/achievements', fetcher);
 
   const earned = new Set((achievements || []).map((a: any) => a.type));
+
+  const displayAchievements = (achievements || []).slice(0, 4);
 
   return (
     <div className="space-y-8">
@@ -44,14 +46,17 @@ export default function AchievementsandRequest({ recommendedProjects }: { recomm
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-3">
-            {ACHIEVEMENT_BADGES.map((badge) => (
+            {displayAchievements.map((achievement: any, idx: number) => (
               <div
-                key={badge.type}
-                className={`text-center p-3 rounded-lg border transition-all duration-200 ${earned.has(badge.type) ? 'bg-green-50 border-green-300' : 'bg-gray-50 border-gray-200 opacity-60'}`}
+                key={achievement.id}
+                className="p-3 border border-gray-200 rounded-lg bg-white transition-colors hover:bg-gray-50 flex flex-col items-center"
               >
-                {badge.icon}
-                <p className={`text-xs font-medium ${earned.has(badge.type) ? 'text-green-900' : 'text-gray-900'}`}>{badge.label}</p>
-                {earned.has(badge.type) && <span className="block text-green-600 text-xs mt-1">Unlocked!</span>}
+                <div className="mb-2">{ICONS[idx]}</div>
+                <p className="text-xs font-medium text-gray-900 text-center">
+                  {achievement.name
+                    ? achievement.name
+                    : achievement.type.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())}
+                </p>
               </div>
             ))}
           </div>
