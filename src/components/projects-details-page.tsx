@@ -124,7 +124,6 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
   const [isInterested, setIsInterested] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
 
-  // Define options if missing
   const TIMELINE_OPTIONS = [
     "1-2 weeks",
     "1 month",
@@ -141,7 +140,6 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
     "10+ people"
   ];
 
-  // Early return for invalid params
   if (!params?.id) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -201,19 +199,6 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
       setIsLoading(false);
     }
   };
-
-  const checkInterestStatus = async (userId: string) => {
-    if (!userId) return
-    try {
-      const response = await fetch(`/api/projects/${params.id}/interest`)
-      if (response.ok) {
-        const data = await response.json()
-        setIsInterested(data.isInterested)
-      }
-    } catch (error) {
-      console.error("Error checking interest status:", error)
-    }
-  }
 
   const handleInterest = async () => {
     if (!currentUser?.id) {
@@ -335,7 +320,7 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
 
       if (response.ok) {
         setEditMode(false)
-        fetchProjectData() // Refresh project data
+        fetchProjectData()
       } else {
         console.error("Failed to update project:", response.status, response.statusText)
       }
@@ -404,7 +389,7 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Project Not Found</h2>
-          <p className="text-gray-600 mb-4">The project you're looking for doesn't exist or has been removed.</p>
+          <p className="text-gray-600 mb-4">The project you&apos;re looking for doesn&apos;t exist or has been removed.</p>
           <Link href="/projects">
             <Button>Back to Projects</Button>
           </Link>
@@ -758,7 +743,7 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
                           <Users size={48} className="mx-auto mb-4 text-gray-300" />
                           <p>No team members yet</p>
                           {isOwner && (
-                            <p className="text-sm">Click "Add Member" to start building your team</p>
+                            <p className="text-sm">Click &quot;Add Member&quot; to start building your team</p>
                           )}
                         </div>
                       )}
@@ -890,7 +875,7 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
                           <Calendar size={48} className="mx-auto mb-4 text-gray-300" />
                           <p>No milestones defined yet</p>
                           {isOwner && (
-                            <p className="text-sm">Click "Update Progress" to add milestones</p>
+                            <p className="text-sm">Click &quot;Update Progress&quot; to add milestones</p>
                           )}
                         </div>
                       )}
@@ -910,7 +895,7 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
                           <Code size={48} className="mx-auto mb-4 text-gray-300" />
                           <p>No tech stack defined yet</p>
                           {isOwner && (
-                            <p className="text-sm">Click "Edit" to add your tech stack</p>
+                            <p className="text-sm">Click &quot;Edit&quot; to add your tech stack</p>
                           )}
                         </div>
                       )}

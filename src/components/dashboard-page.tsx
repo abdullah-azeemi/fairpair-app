@@ -116,7 +116,7 @@ export default function DashboardPage() {
           : [];
       
       const authorIds = Array.from(new Set(data.map(p => p.author_id)));
-      let authorMap: Record<string, string> = {};
+      const authorMap: Record<string, string> = {};
       for (const id of authorIds) {
         const res = await fetch(`/api/user?userId=${id}`);
         const author = await res.json();

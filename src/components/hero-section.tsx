@@ -153,7 +153,7 @@ export default function HeroSection() {
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-3">Share Your Project</h3>
               <p className="text-gray-600">
-                Upload your project idea with details about what youre building and the skills you need.
+                Upload your project idea with details about what&apos;s building and the skills you need.
               </p>
             </div>
 
@@ -195,7 +195,7 @@ export default function HeroSection() {
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Why Choose Fair Pair?</h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              We've built the perfect platform for developers to connect, collaborate, and create amazing projects
+              We&apos;ve built the perfect platform for developers to connect, collaborate, and create amazing projects
               together.
             </p>
           </div>
@@ -296,8 +296,8 @@ export default function HeroSection() {
                   ))}
                 </div>
                 <p className="text-gray-700 mb-4">
-                  "Fair Pair helped me find the perfect co-founder for my AI startup. We've raised $500K and are growing
-                  fast!"
+                  &quot;Fair Pair helped me find the perfect co-founder for my AI startup. We&apos;ve raised $500K and are growing
+                  fast!&quot;
                 </p>
                 <div className="flex items-center">
                   <Avatar className="w-10 h-10 mr-3">
@@ -320,7 +320,7 @@ export default function HeroSection() {
                   ))}
                 </div>
                 <p className="text-gray-700 mb-4">
-                  "I found an amazing team for my open-source project. We now have 10K+ GitHub stars and growing!"
+                  &quot;I found an amazing team for my open-source project. We now have 10K+ GitHub stars and growing!&quot;
                 </p>
                 <div className="flex items-center">
                   <Avatar className="w-10 h-10 mr-3">
@@ -343,7 +343,7 @@ export default function HeroSection() {
                   ))}
                 </div>
                 <p className="text-gray-700 mb-4">
-                  "The collaboration tools are fantastic. We built and launched our app in just 3 months!"
+                  &quot;The collaboration tools are fantastic. We built and launched our app in just 3 months!&quot;
                 </p>
                 <div className="flex items-center">
                   <Avatar className="w-10 h-10 mr-3">
@@ -556,24 +556,16 @@ export default function HeroSection() {
               <h4 className="font-semibold mb-4">Product</h4>
               <ul className="space-y-2 text-gray-400">
                 <li>
-                  <a href="/projects" className="hover:text-white transition-colors">
-                    Browse Projects
-                  </a>
+                  <Link href="/projects" className="hover:text-white transition-colors">Browse Projects</Link>
                 </li>
                 <li>
-                  <a href="/signup" className="hover:text-white transition-colors">
-                    Sign Up
-                  </a>
+                  <Link href="/signup" className="hover:text-white transition-colors">Sign Up</Link>
                 </li>
                 <li>
-                  <a href="/login" className="hover:text-white transition-colors">
-                    Login
-                  </a>
+                  <Link href="/login" className="hover:text-white transition-colors">Login</Link>
                 </li>
                 <li>
-                  <a href="/pricing" className="hover:text-white transition-colors">
-                    Pricing
-                  </a>
+                  <Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link>
                 </li>
               </ul>
             </div>
@@ -582,24 +574,16 @@ export default function HeroSection() {
               <h4 className="font-semibold mb-4">Company</h4>
               <ul className="space-y-2 text-gray-400">
                 <li>
-                  <a href="/about" className="hover:text-white transition-colors">
-                    About
-                  </a>
+                  <Link href="/about" className="hover:text-white transition-colors">About</Link>
                 </li>
                 <li>
-                  <a href="/blog" className="hover:text-white transition-colors">
-                    Blog
-                  </a>
+                  <Link href="/blog" className="hover:text-white transition-colors">Blog</Link>
                 </li>
                 <li>
-                  <a href="/careers" className="hover:text-white transition-colors">
-                    Careers
-                  </a>
+                  <Link href="/careers" className="hover:text-white transition-colors">Careers</Link>
                 </li>
                 <li>
-                  <a href="/contact" className="hover:text-white transition-colors">
-                    Contact
-                  </a>
+                  <Link href="/contact" className="hover:text-white transition-colors">Contact</Link>
                 </li>
               </ul>
             </div>

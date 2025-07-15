@@ -30,9 +30,7 @@ const ICONS = [
 
 export default function AchievementsandRequest({ recommendedProjects }: { recommendedProjects: RecommendedProject[] }) {
   const fetcher = (url: string) => fetch(url).then(res => res.json());
-  const { data: achievements, error, isLoading } = useSWR('/api/achievements', fetcher);
-
-  const earned = new Set((achievements || []).map((a: Achievement) => a.type));
+  const { data: achievements } = useSWR('/api/achievements', fetcher);
 
   const displayAchievements = (achievements || []).slice(0, 4);
 

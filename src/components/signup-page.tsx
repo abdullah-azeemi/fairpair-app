@@ -96,7 +96,7 @@ export default function SignupPage() {
   const handleSubmit = async () => {
     setIsLoading(true)
     try {
-      const response = await axios.post('/api/signup', formData)
+      await axios.post('/api/signup', formData)
       setIsLoading(false)
       await signIn("credentials", {
         redirect: false,
