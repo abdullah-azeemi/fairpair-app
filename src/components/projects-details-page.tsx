@@ -105,37 +105,43 @@ interface ProjectDetailsPageProps {
 }
 
 interface User { id: string; username: string; name?: string; email?: string; }
-const [currentUser, setCurrentUser] = useState<User | null>(null)
-  
-  const [editMode, setEditMode] = useState(false)
-  const [editData, setEditData] = useState<Partial<ProjectData>>({})
-  
-  const [showAddMember, setShowAddMember] = useState(false)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [searchResults, setSearchResults] = useState<User[]>([])
-  const [selectedUser, setSelectedUser] = useState<User | null>(null)
-  const [newMemberRole, setNewMemberRole] = useState("")
-  
-  const [showProgressModal, setShowProgressModal] = useState(false)
-  const [progressData, setProgressData] = useState({
-    progress: 0,
-    milestones: [] as Milestone[]
-  })
 
-  useEffect(() => {
-    if (params.id) {
-      fetchCurrentUser()
-    }
-  }, [params.id])
+export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) {
+  // All hooks and logic must be at the top
+  const router = useRouter();
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [editMode, setEditMode] = useState(false);
+  const [editData, setEditData] = useState<Partial<ProjectData>>({});
+  const [showAddMember, setShowAddMember] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<User[]>([]);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [newMemberRole, setNewMemberRole] = useState("");
+  const [showProgressModal, setShowProgressModal] = useState(false);
+  const [progressData, setProgressData] = useState({ progress: 0, milestones: [] as Milestone[] });
+  const [projectData, setProjectData] = useState<ProjectData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isInterested, setIsInterested] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
 
-  useEffect(() => {
-    if (params.id && currentUser) {
-      fetchProjectData()
-      
-      fetch(`/api/projects/${params.id}/view`, { method: 'POST' }).catch(console.error)
-    }
-  }, [params.id, currentUser])
+  // Define options if missing
+  const TIMELINE_OPTIONS = [
+    "1-2 weeks",
+    "1 month",
+    "2-3 months",
+    "3-6 months",
+    "6+ months",
+    "Ongoing"
+  ];
+  const TEAM_SIZE_OPTIONS = [
+    "Just me",
+    "2-3 people",
+    "4-5 people",
+    "6-10 people",
+    "10+ people"
+  ];
 
+  // Early return for invalid params
   if (!params?.id) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -144,8 +150,21 @@ const [currentUser, setCurrentUser] = useState<User | null>(null)
           <p className="text-gray-600 mb-4">No project ID provided. Please check the link or go back to the project list.</p>
         </div>
       </div>
-    )
+    );
   }
+
+  useEffect(() => {
+    if (params.id) {
+      fetchCurrentUser();
+    }
+  }, [params.id]);
+
+  useEffect(() => {
+    if (params.id && currentUser) {
+      fetchProjectData();
+      fetch(`/api/projects/${params.id}/view`, { method: 'POST' }).catch(console.error);
+    }
+  }, [params.id, currentUser]);
 
   const fetchCurrentUser = async () => {
     try {
@@ -294,7 +313,6 @@ const [currentUser, setCurrentUser] = useState<User | null>(null)
     }
   }
 
-  // Helper function to convert camelCase to snake_case
   const toSnakeCase = (obj: Record<string, unknown>): Record<string, unknown> => {
     const snakeCaseObj: Record<string, unknown> = {}
     Object.keys(obj).forEach(key => {
@@ -306,7 +324,7 @@ const [currentUser, setCurrentUser] = useState<User | null>(null)
 
   const updateProject = async () => {
     try {
-      // Convert camelCase to snake_case for backend compatibility
+
       const snakeCaseData = toSnakeCase(editData)
       
       const response = await fetch(`/api/projects/${params.id}/update`, {
@@ -378,7 +396,7 @@ const [currentUser, setCurrentUser] = useState<User | null>(null)
           <p className="mt-4 text-gray-600">Loading project details...</p>
         </div>
       </div>
-    )
+    );
   }
 
   if (!projectData) {
@@ -392,7 +410,7 @@ const [currentUser, setCurrentUser] = useState<User | null>(null)
           </Link>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -444,7 +462,7 @@ const [currentUser, setCurrentUser] = useState<User | null>(null)
                               <SelectValue placeholder="Select timeline" />
                             </SelectTrigger>
                             <SelectContent>
-                              {TIMELINE_OPTIONS.map((option) => (
+                              {TIMELINE_OPTIONS.map((option: string) => (
                                 <SelectItem key={option} value={option}>{option}</SelectItem>
                               ))}
                             </SelectContent>
@@ -457,7 +475,7 @@ const [currentUser, setCurrentUser] = useState<User | null>(null)
                               <SelectValue placeholder="Select team size" />
                             </SelectTrigger>
                             <SelectContent>
-                              {TEAM_SIZE_OPTIONS.map((option) => (
+                              {TEAM_SIZE_OPTIONS.map((option: string) => (
                                 <SelectItem key={option} value={option}>{option}</SelectItem>
                               ))}
                             </SelectContent>
@@ -992,5 +1010,5 @@ const [currentUser, setCurrentUser] = useState<User | null>(null)
         </div>
       </div>
     </div>
-  )
+  );
 }
