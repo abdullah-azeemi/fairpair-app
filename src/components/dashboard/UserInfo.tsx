@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { Progress } from "@/components/ui/progress"
 import {
@@ -40,15 +40,13 @@ export default function UserInfo() {
   const fetcher = (url: string) => fetch(url).then(res => res.json());
   const { data, error, isLoading } = useSWR('/api/user', fetcher);
 
-  if (isLoading) return <UserInfoSkeleton />;
-  if (error || data?.error) return <div className="text-red-500">Failed to load user info</div>;
+  if (isLoading || error || data?.error) return <UserInfoSkeleton />;
   if (!data) return null;
 
-  // Map backend data to frontend UserData type
   const userData = {
     name: data.name,
     username: data.username,
-    avatar: '', // No avatar in backend yet
+    avatar: '', 
     bio: data.bio || '',
     skills: data.skills || [],
     interests: data.interests || [],
@@ -56,10 +54,10 @@ export default function UserInfo() {
       github: data.github || '#',
       linkedin: data.linkedin || '#',
       email: data.email || '',
-      portfolio: '#', // No portfolio in backend yet
+      portfolio: '#', 
     },
-    //joinedDate: new Date(data.createdAt).toLocaleString('default', { month: 'long', year: 'numeric' }),
-    profileStrength: 85, // Placeholder, calculate as needed
+    
+    profileStrength: 85, 
   };
 
   return <div>
@@ -73,7 +71,7 @@ export default function UserInfo() {
               <AvatarFallback className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 text-white">
                 {userData.name
                   .split(" ")
-                  .map((n) => n[0])
+                  .map((n: string) => n[0])
                   .join("")}
               </AvatarFallback>
             </Avatar>
@@ -123,7 +121,7 @@ export default function UserInfo() {
               Skills
             </h3>
             <div className="flex flex-wrap gap-2">
-              {userData.skills.map((skill) => (
+              {userData.skills.map((skill: string) => (
                 <Badge key={skill} className="bg-blue-100 text-blue-800 hover:bg-blue-200">
                   {skill}
                 </Badge>
@@ -136,7 +134,7 @@ export default function UserInfo() {
               Interests
             </h3>
             <div className="flex flex-wrap gap-2">
-              {userData.interests.map((interest) => (
+              {userData.interests.map((interest: string) => (
                 <Badge
                   key={interest}
                   variant="outline"

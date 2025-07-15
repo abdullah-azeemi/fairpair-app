@@ -20,10 +20,7 @@ export default function ProjectList(){
   const fetcher = (url:string) => fetch(url).then(res => res.json());
   const {data, error, isLoading} = useSWR('/api/projects/user', fetcher);
 
-  if (isLoading) return <ProjectListSkeleton />
-  if (error) return <div className="text-red-500">Failed to Load Projects</div>
-  if (!data) return null;
-  if (!Array.isArray(data)) return <div className="text-red-500">No projects found or error loading projects.</div>;
+  if (isLoading || error || !data || !Array.isArray(data)) return <ProjectListSkeleton />;
 
   const handleDelete = async (projectId: string) => {
     if (!confirm("Are you sure you want to delete this project?")) return;
