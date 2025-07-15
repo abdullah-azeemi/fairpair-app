@@ -141,6 +141,28 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
 
   const isValidId = !!params?.id;
 
+  const fetchProjectData = async () => {
+    try {
+      const response = await fetch(`/api/projects/${params.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setProjectData(data);
+        setIsOwner(currentUser?.id === data.author.id);
+        setEditData(data);
+        setProgressData({
+          progress: data.progress || 0,
+          milestones: data.milestones || []
+        });
+      } else {
+        console.error("Failed to fetch project:", response.status, response.statusText);
+      }
+    } catch (error) {
+      console.error("Error fetching project:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (params.id) {
       fetchCurrentUser();
@@ -152,7 +174,7 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
       fetchProjectData();
       fetch(`/api/projects/${params.id}/view`, { method: 'POST' }).catch(console.error);
     }
-  }, [params.id, currentUser]);
+  }, [params.id, currentUser, fetchProjectData]);
 
   if (!isValidId) {
     return (
@@ -176,28 +198,6 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
       }
     } catch (error) {
       console.error("Error fetching current user:", error);
-    }
-  };
-
-  const fetchProjectData = async () => {
-    try {
-      const response = await fetch(`/api/projects/${params.id}`);
-      if (response.ok) {
-        const data = await response.json();
-        setProjectData(data);
-        setIsOwner(currentUser?.id === data.author.id);
-        setEditData(data);
-        setProgressData({
-          progress: data.progress || 0,
-          milestones: data.milestones || []
-        });
-      } else {
-        console.error("Failed to fetch project:", response.status, response.statusText);
-      }
-    } catch (error) {
-      console.error("Error fetching project:", error);
-    } finally {
-      setIsLoading(false);
     }
   };
 

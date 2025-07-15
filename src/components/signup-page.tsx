@@ -104,7 +104,7 @@ export default function SignupPage() {
         password: formData.password,
       })
       router.push('/dashboard')
-    } catch (error) {
+    } catch {
       setIsLoading(false)
     }
   }
