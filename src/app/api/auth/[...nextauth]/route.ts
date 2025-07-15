@@ -2,8 +2,11 @@ import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { supabase } from "@/utils/supabase";
 import { verify } from "argon2";
+import type { JWT } from "next-auth/jwt";
+import type { User, Session } from "next-auth";
+import type { AdapterUser } from "next-auth/adapters";
 
-export const authOptions = {
+const authOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -54,14 +57,16 @@ export const authOptions = {
     strategy: "jwt" as const,
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user }: { token: JWT; user?: User | AdapterUser }) {
       if (user) {
         token.id = user.id;
-        token.username = user.username;
+        if ('username' in user && typeof user.username === 'string') {
+          token.username = user.username;
+        }
       }
       return token;
     },
-    async session({ session, token }) {
+    async session({ session, token }: { session: Session; token: JWT }) {
       // adding user ID to the session
       if (token) {
         session.user.id = token.id as string;
