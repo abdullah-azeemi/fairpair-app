@@ -107,7 +107,6 @@ interface ProjectDetailsPageProps {
 interface User { id: string; username: string; name?: string; email?: string; }
 
 export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) {
-  // All hooks and logic must be at the top
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [editMode, setEditMode] = useState(false);
@@ -140,16 +139,7 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
     "10+ people"
   ];
 
-  if (!params?.id) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-red-600 mb-2">Invalid project URL</h2>
-          <p className="text-gray-600 mb-4">No project ID provided. Please check the link or go back to the project list.</p>
-        </div>
-      </div>
-    );
-  }
+  const isValidId = !!params?.id;
 
   useEffect(() => {
     if (params.id) {
@@ -163,6 +153,17 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
       fetch(`/api/projects/${params.id}/view`, { method: 'POST' }).catch(console.error);
     }
   }, [params.id, currentUser]);
+
+  if (!isValidId) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-red-600 mb-2">Invalid project URL</h2>
+          <p className="text-gray-600 mb-4">No project ID provided. Please check the link or go back to the project list.</p>
+        </div>
+      </div>
+    );
+  }
 
   const fetchCurrentUser = async () => {
     try {
