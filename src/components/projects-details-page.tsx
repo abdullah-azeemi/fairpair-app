@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -141,7 +141,7 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
 
   const isValidId = !!params?.id;
 
-  const fetchProjectData = async () => {
+  const fetchProjectData = useCallback(async () => {
     try {
       const response = await fetch(`/api/projects/${params.id}`);
       if (response.ok) {
@@ -161,7 +161,7 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [params.id, currentUser]);
 
   useEffect(() => {
     if (params.id) {
