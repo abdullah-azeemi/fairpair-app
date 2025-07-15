@@ -13,7 +13,6 @@ export async function GET() {
     .eq("id", userId)
     .single();
   if (error || !user) {
-    console.log("User not Found", error);
     return NextResponse.json({ error: 'User not found' }, { status: 404 });
   }
   return NextResponse.json(user);

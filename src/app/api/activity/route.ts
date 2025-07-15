@@ -14,7 +14,6 @@ export async function GET() {
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
     .limit(20);
-  //console.log('Supabase activity:', activity, 'Error:', error);
   if (error) return NextResponse.json([], { status: 200 });
   return NextResponse.json(activity || []);
 }

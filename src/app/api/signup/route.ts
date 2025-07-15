@@ -20,7 +20,6 @@ export async function POST(req: Request) {
     }
     return NextResponse.json({ success: true, user: newUser });
   } catch (error: any) {
-    console.log("Signup error", error);
     return NextResponse.json({ success: false, error: error?.message || JSON.stringify(error) }, { status: 500 });
   }
 }

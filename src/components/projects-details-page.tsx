@@ -129,7 +129,6 @@ const TEAM_SIZE_OPTIONS = [
 ];
 
 export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) {
-  console.log("params.id", params.id)
   const router = useRouter()
   const [projectData, setProjectData] = useState<ProjectData | null>(null)
   const [isInterested, setIsInterested] = useState(false)
@@ -179,13 +178,10 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
 
   const fetchCurrentUser = async () => {
     try {
-      console.log("Fetching current user...")
       const response = await fetch('/api/user');
       if (response.ok) {
         const user = await response.json();
         setCurrentUser(user);
-        console.log("Current user loaded:", user);
-        checkInterestStatus(user.id)
       } else {
         console.error("Failed to fetch user:", response.status, response.statusText);
       }
@@ -196,7 +192,6 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
 
   const fetchProjectData = async () => {
     try {
-      console.log("Fetching project with ID:", params.id);
       const response = await fetch(`/api/projects/${params.id}`);
       if (response.ok) {
         const data = await response.json();
@@ -207,7 +202,6 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
           progress: data.progress || 0,
           milestones: data.milestones || []
         });
-        console.log("Project data loaded:", data);
       } else {
         console.error("Failed to fetch project:", response.status, response.statusText);
       }

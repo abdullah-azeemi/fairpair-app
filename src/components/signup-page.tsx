@@ -98,7 +98,6 @@ export default function SignupPage() {
     try {
       const response = await axios.post('/api/signup', formData)
       setIsLoading(false)
-      console.log(response)
       await signIn("credentials", {
         redirect: false,
         email: formData.email,
@@ -107,7 +106,6 @@ export default function SignupPage() {
       router.push('/dashboard')
     } catch (error) {
       setIsLoading(false)
-      console.log("Signup error", error)
     }
   }
 

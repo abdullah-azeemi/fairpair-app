@@ -45,8 +45,6 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   if (body.tech_stack) updateData.tech_stack = body.tech_stack;
   if (body.milestones !== undefined) updateData.milestones = body.milestones;
 
-  console.log("PATCH /projects/:id/update updateData:", updateData);
-
   const { data, error } = await supabase
     .from("projects")
     .update(updateData)

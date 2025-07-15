@@ -3,7 +3,6 @@ import { supabase } from "@/utils/supabase";
 
 export async function DELETE(request: Request, context: { params: { id: string } }) {
   const { id } = context.params;
-  console.log("Deleting project with id:", id);
   const { error } = await supabase
     .from("projects")
     .delete()

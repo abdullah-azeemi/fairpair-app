@@ -67,10 +67,10 @@ export default function MessagesPage() {
   }, [])
 
   useEffect(() => {
-    if (!currentUserId || !recipientId) return;
+    if (!currentUserId) return;
     const fetchMessages = async () => {
       try {
-        const res = await fetch(`/api/messages?user1=${currentUserId}&user2=${recipientId}`);
+        const res = await fetch(`/api/messages?userId=${currentUserId}`);
         const data = await res.json();
         if (res.ok && Array.isArray(data)) {
           setFetchedMessages(
@@ -90,7 +90,7 @@ export default function MessagesPage() {
       }
     };
     fetchMessages();
-  }, [currentUserId, recipientId]);
+  }, [currentUserId]);
 
   useEffect(() => {
     if (!recipientId || recipientId === currentUserId) {
@@ -155,11 +155,11 @@ export default function MessagesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex flex-col items-center justify-center">
-      <div className="w-full max-w-5xl mt-10 grid grid-cols-1 md:grid-cols-4 gap-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex flex-col items-center justify-center px-2 md:px-0">
+      <div className="w-full max-w-5xl mt-4 md:mt-10 flex flex-col md:grid md:grid-cols-4 gap-2 md:gap-6">
         {/* Sidebar */}
-        <div className="bg-white/80 backdrop-blur-sm border-0 shadow-xl rounded-lg p-4 md:col-span-1 h-[60vh] flex flex-col">
-          <h2 className="text-lg font-semibold mb-4">Conversations</h2>
+        <div className="bg-white/80 backdrop-blur-sm border-0 shadow-xl rounded-2xl p-2 md:p-4 md:col-span-1 h-auto md:h-[60vh] flex flex-col mb-2 md:mb-0">
+          <h2 className="text-lg font-semibold mb-2 md:mb-4">Conversations</h2>
           <div className="flex-1 overflow-y-auto">
             {conversations.length === 0 && <div className="text-gray-400 text-sm">No conversations yet.</div>}
             {conversations.map((user) => (
@@ -176,27 +176,27 @@ export default function MessagesPage() {
           </div>
         </div>
         {/* Chat Area */}
-        <div className="md:col-span-3">
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl flex flex-col">
-            <CardHeader className="pb-4 border-b border-gray-200">
-              <div className="flex items-center justify-between">
+        <div className="md:col-span-3 flex flex-col h-[70vh] md:h-[60vh]">
+          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl flex flex-col flex-1 h-full rounded-2xl mb-2 md:mb-0">
+            <CardHeader className="pb-2 md:pb-4 border-b border-gray-200">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-0">
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                   Messages
                 </h1>
                 {recipientUser && (
-                  <span className="ml-4 text-sm text-gray-500">
+                  <span className="text-sm text-gray-500">
                     Chatting with: <b>{recipientUser.username}</b>
                   </span>
                 )}
                 {recipientId === currentUserId && (
-                  <span className="ml-4 text-sm text-gray-500">
+                  <span className="text-sm text-gray-500">
                     You cannot chat with yourself.
                   </span>
                 )}
               </div>
             </CardHeader>
-            <CardContent className="flex-1 p-0">
-              <ScrollArea className="h-[60vh] p-4">
+            <CardContent className="flex-1 p-2 md:p-0 flex flex-col">
+              <ScrollArea className="flex-1 h-[40vh] md:h-[60vh] p-2 md:p-4">
                 <div className="space-y-4">
                   {[...fetchedMessages, ...socketMessages
                     .filter(
@@ -207,13 +207,13 @@ export default function MessagesPage() {
                     .map((message, idx) => (
                       <div key={idx} className={`flex ${message.isOwn ? "justify-end" : "justify-start"}`}>
                         <div
-                          className={`max-w-[70%] p-3 rounded-2xl ${
+                          className={`max-w-[85vw] md:max-w-[70%] p-3 rounded-2xl ${
                             message.isOwn
                               ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white"
                               : "bg-gray-100 text-gray-900"
                           }`}
                         >
-                          <p className="text-sm">{message.content}</p>
+                          <p className="text-sm break-words">{message.content}</p>
                           <div className={`flex items-center justify-end mt-1 space-x-1`}>
                             <span className={`text-xs ${message.isOwn ? "text-blue-100" : "text-gray-500"}`}>
                               {message.time}
@@ -225,7 +225,7 @@ export default function MessagesPage() {
                 </div>
               </ScrollArea>
             </CardContent>
-            <div className="p-4 border-t border-gray-200">
+            <div className="p-2 md:p-4 border-t border-gray-200 sticky bottom-0 bg-white/80">
               <div className="flex items-center space-x-2">
                 <Button variant="ghost" size="sm">
                   <Paperclip size={16} />
