@@ -90,7 +90,7 @@ export async function POST(req: Request) {
       ]);
     }
     return NextResponse.json({ success: true, project: newProject });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Project creation error", error);
     return NextResponse.json({ error: error?.message || "Failed to create project" }, { status: 500 });
   }

@@ -14,6 +14,7 @@ import Link from "next/link"
 import useSWR , {mutate} from "swr"
 import ProjectListSkeleton from "./ProjectListSkeleton"
 import { formatDistanceToNow } from "date-fns"
+import { Project } from "@/types/project"
 
 export default function ProjectList(){
 
@@ -53,7 +54,7 @@ export default function ProjectList(){
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                {data.map((project: any) => (
+                {data.map((project: Project) => (
                   <div
                     key={project.id}
                     className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow"

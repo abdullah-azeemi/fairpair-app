@@ -29,7 +29,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     return NextResponse.json({ error: "Not authorized" }, { status: 403 });
   }
 
-  const updateData: any = {
+  const updateData: Record<string, unknown> = {
     updated_at: new Date().toISOString()
   };
 

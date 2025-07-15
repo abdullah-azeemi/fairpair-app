@@ -15,7 +15,7 @@ import MessagesRequestSkeleton from "./dashboard/MessagesRequestSkeleton"
 import AchievementsandReccomendations from "./dashboard/AchievementsandReccomendations"
 import AchievementsandReccomendationsSkeleton from "./dashboard/AchievementsandReccomendationsSkeleton"
 import type { Request } from "@/components/dashboard/MessagesRequest"
-import type { RecommendedProject } from "./dashboard/AchievementsandReccomendations"
+import { RecommendedProject } from "@/types/recommended-project";
 import { signOut } from "next-auth/react"
 
 type SupabaseMessage = {
@@ -125,7 +125,7 @@ export default function DashboardPage() {
         }
       }
       
-      const projectsWithAuthors = data.map((project: any) => ({
+      const projectsWithAuthors = data.map((project: RecommendedProject) => ({
         ...project,
         author: authorMap[project.author_id] || "Unknown User",
         matchedSkills: Array.isArray(project.skills_needed)

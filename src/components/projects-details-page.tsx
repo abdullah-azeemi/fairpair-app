@@ -104,37 +104,8 @@ interface ProjectDetailsPageProps {
   }
 }
 
-interface User {
-  id: string
-  name: string
-  username: string
-  bio: string
-  skills: string[]
-}
-
-const TIMELINE_OPTIONS = [
-  "1-2 weeks",
-  "1 month",
-  "2-3 months",
-  "3-6 months",
-  "6+ months",
-  "Ongoing"
-];
-const TEAM_SIZE_OPTIONS = [
-  "Just me",
-  "2-3 people",
-  "4-5 people",
-  "6-10 people",
-  "10+ people"
-];
-
-export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) {
-  const router = useRouter()
-  const [projectData, setProjectData] = useState<ProjectData | null>(null)
-  const [isInterested, setIsInterested] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [isOwner, setIsOwner] = useState(false)
-  const [currentUser, setCurrentUser] = useState<any>(null)
+interface User { id: string; username: string; name?: string; email?: string; }
+const [currentUser, setCurrentUser] = useState<User | null>(null)
   
   const [editMode, setEditMode] = useState(false)
   const [editData, setEditData] = useState<Partial<ProjectData>>({})
@@ -324,8 +295,8 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
   }
 
   // Helper function to convert camelCase to snake_case
-  const toSnakeCase = (obj: any): any => {
-    const snakeCaseObj: any = {}
+  const toSnakeCase = (obj: Record<string, unknown>): Record<string, unknown> => {
+    const snakeCaseObj: Record<string, unknown> = {}
     Object.keys(obj).forEach(key => {
       const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`)
       snakeCaseObj[snakeKey] = obj[key]
@@ -388,7 +359,7 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
     })
   }
 
-  const updateMilestone = (index: number, field: keyof Milestone, value: any) => {
+  const updateMilestone = (index: number, field: keyof Milestone, value: unknown) => {
     const updatedMilestones = [...progressData.milestones]
     updatedMilestones[index] = { ...updatedMilestones[index], [field]: value }
     setProgressData({ ...progressData, milestones: updatedMilestones })

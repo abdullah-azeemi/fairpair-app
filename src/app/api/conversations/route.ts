@@ -44,7 +44,7 @@ export async function GET(request: Request) {
     // Get unique conversation partners
     const conversationPartners = new Map();
     
-    conversations?.forEach((msg: any) => {
+    conversations?.forEach((msg: Record<string, unknown>) => {
       const partnerId = msg.sender_id === userId ? msg.receiver_id : msg.sender_id;
       const partner = msg.sender_id === userId ? msg.receiver : msg.sender;
       

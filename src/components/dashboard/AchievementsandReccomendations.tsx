@@ -10,6 +10,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import useSWR from "swr"
+import { Achievement } from "@/types/achievement";
 
 export type RecommendedProject = {
   id: string
@@ -31,7 +32,7 @@ export default function AchievementsandRequest({ recommendedProjects }: { recomm
   const fetcher = (url: string) => fetch(url).then(res => res.json());
   const { data: achievements, error, isLoading } = useSWR('/api/achievements', fetcher);
 
-  const earned = new Set((achievements || []).map((a: any) => a.type));
+  const earned = new Set((achievements || []).map((a: Achievement) => a.type));
 
   const displayAchievements = (achievements || []).slice(0, 4);
 
@@ -46,7 +47,7 @@ export default function AchievementsandRequest({ recommendedProjects }: { recomm
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-3">
-            {displayAchievements.map((achievement: any, idx: number) => (
+            {displayAchievements.map((achievement: Achievement, idx: number) => (
               <div
                 key={achievement.id}
                 className="p-3 border border-gray-200 rounded-lg bg-white transition-colors hover:bg-gray-50 flex flex-col items-center"

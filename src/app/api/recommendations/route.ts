@@ -39,7 +39,7 @@ export async function GET() {
     return NextResponse.json({ error: projectsError.message }, { status: 500 });
   }
 
-  const recommendations = (projects || []).map((project: any) => ({
+  const recommendations = (projects || []).map((project: Record<string, unknown>) => ({
     ...project,
     matchingSkills: Array.isArray(project.skills_needed)
       ? project.skills_needed.filter((skill: string) => userSkills.includes(skill)).length

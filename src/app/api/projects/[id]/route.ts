@@ -101,7 +101,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
     views: views || 0,
     interested: interested || 0,
     currentTeam: (() => {
-      const teamFromMembers = (teamMembers || []).map((member: any) => ({
+      const teamFromMembers = (teamMembers || []).map((member: Record<string, unknown>) => ({
         id: member.user.id,
         name: member.user.name,
         username: member.user.username,

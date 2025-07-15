@@ -19,7 +19,7 @@ export async function POST(req: Request) {
       throw error;
     }
     return NextResponse.json({ success: true, user: newUser });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json({ success: false, error: error?.message || JSON.stringify(error) }, { status: 500 });
   }
 }
