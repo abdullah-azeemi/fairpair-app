@@ -12,10 +12,9 @@ import RecentActivity from "./dashboard/RecentActivity"
 import RecentActivitySkeleton from "./dashboard/RecentActivitySkeleton"
 import MessagesRequest from "./dashboard/MessagesRequest"
 import MessagesRequestSkeleton from "./dashboard/MessagesRequestSkeleton"
-import AchievementsandReccomendations from "./dashboard/AchievementsandReccomendations"
+import AchievementsandReccomendations, { RecommendedProject } from "./dashboard/AchievementsandReccomendations"
 import AchievementsandReccomendationsSkeleton from "./dashboard/AchievementsandReccomendationsSkeleton"
 import type { Request } from "@/components/dashboard/MessagesRequest"
-import { RecommendedProject } from "@/types/recommended-project";
 import { signOut } from "next-auth/react"
 
 type SupabaseMessage = {
@@ -27,6 +26,15 @@ type SupabaseMessage = {
 };
 
 type User = { id: string; username: string };
+
+type RawProject = {
+  id: string;
+  title: string;
+  author_id?: string;
+  skills_needed?: string[];
+  created_at?: string;
+  // ...any other fields you expect
+};
 
 export default function DashboardPage() {
   const userLoading = false;
@@ -101,7 +109,7 @@ export default function DashboardPage() {
     (async () => {
      
       const recRes = await fetch("/api/recommendations");
-      const data: RecommendedProject[] = await recRes.json();
+      const data: RawProject[] = await recRes.json();
       if (!Array.isArray(data) || data.length === 0) {
         setRecommendations([]);
         setRecommendationsLoading(false);
@@ -115,19 +123,27 @@ export default function DashboardPage() {
           ? user.skills.split(",").map((s: string) => s.trim())
           : [];
       
-      const authorIds = Array.from(new Set(data.map(p => p.author_id)));
+      // Get unique author IDs from the raw API data
+      const authorIds = Array.from(new Set(data.map((p: RawProject) => p.author_id)));
       const authorMap: Record<string, string> = {};
       for (const id of authorIds) {
         const res = await fetch(`/api/user?userId=${id}`);
         const author = await res.json();
-        if (author && author.username) {
+        if (id !== undefined && author && author.username) {
           authorMap[id] = author.username;
         }
       }
-      
-      const projectsWithAuthors = data.map((project: RecommendedProject) => ({
-        ...project,
-        author: authorMap[project.author_id] || "Unknown User",
+      const projectsWithAuthors = data.map((project: RawProject) => ({
+        id: project.id,
+        title: project.title,
+        author: project.author_id ? authorMap[project.author_id] || "Unknown User" : "Unknown User",
+        skills: Array.isArray(project.skills_needed) ? project.skills_needed : [],
+        matchingSkills: Array.isArray(project.skills_needed)
+          ? project.skills_needed.filter((skill: string) => userSkills.includes(skill)).length
+          : 0,
+        timeAgo: project.created_at
+          ? new Date(project.created_at).toLocaleDateString()
+          : "",
         matchedSkills: Array.isArray(project.skills_needed)
           ? project.skills_needed.filter((skill: string) => userSkills.includes(skill)).slice(0, 3)
           : [],

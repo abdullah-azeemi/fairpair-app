@@ -8,6 +8,14 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+type MessageRow = {
+  sender_id: string;
+  receiver_id: string;
+  created_at: string;
+  sender: { id: string; username: string }[];
+  receiver: { id: string; username: string }[];
+};
+
 export async function GET(request: Request) {
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
@@ -44,9 +52,10 @@ export async function GET(request: Request) {
     // Get unique conversation partners
     const conversationPartners = new Map();
     
-    conversations?.forEach((msg: Record<string, unknown>) => {
+    (conversations as MessageRow[] | undefined)?.forEach((msg: MessageRow) => {
       const partnerId = msg.sender_id === userId ? msg.receiver_id : msg.sender_id;
-      const partner = msg.sender_id === userId ? msg.receiver : msg.sender;
+      const partnerArr = msg.sender_id === userId ? msg.receiver : msg.sender;
+      const partner = partnerArr && partnerArr.length > 0 ? partnerArr[0] : undefined;
       
       if (!conversationPartners.has(partnerId) && partnerId !== userId) {
         conversationPartners.set(partnerId, {
@@ -59,6 +68,10 @@ export async function GET(request: Request) {
     return NextResponse.json(Array.from(conversationPartners.values()));
   } catch (error) {
     console.error("Error in conversations API:", error);
-    return NextResponse.json({ error: "Failed to fetch conversations" }, { status: 500 });
+    const errorMessage =
+      typeof error === "object" && error !== null && "message" in error
+        ? (error as { message: string }).message
+        : "Failed to fetch conversations";
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

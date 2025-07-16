@@ -54,6 +54,10 @@ export async function GET(request: Request) {
     return NextResponse.json(users || []);
   } catch (error) {
     console.error("Error in user search:", error);
-    return NextResponse.json({ error: "Search failed" }, { status: 500 });
+    const errorMessage =
+      typeof error === "object" && error !== null && "message" in error
+        ? (error as { message: string }).message
+        : "Search failed";
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 } 

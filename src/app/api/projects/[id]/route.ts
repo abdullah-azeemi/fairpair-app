@@ -1,13 +1,24 @@
-import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { NextRequest, NextResponse } from "next/server";
+import { supabase } from "@/utils/supabase";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+type Context = {
+  params: Promise<{ id: string }>;
+};
 
-export async function DELETE(request: Request, context: { params: Promise<{ id: string }> }) {
-  const { id } = await context.params;
+type TeamMember = {
+  role: string;
+  joined_at: string;
+  user: {
+    id: string;
+    name: string;
+    username: string;
+    bio?: string;
+    skills?: string[];
+  }[];
+};
+
+export async function DELETE(request: NextRequest, { params }: Context) {
+  const { id } = await params;
   const { error } = await supabase
     .from("projects")
     .delete()
@@ -20,8 +31,8 @@ export async function DELETE(request: Request, context: { params: Promise<{ id: 
   return NextResponse.json({ message: "Project deleted successfully" }, { status: 200 });
 }
 
-export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
-  const { id } = await context.params;
+export async function PATCH(request: NextRequest, { params }: Context) {
+  const { id } = await params;
   const { error } = await supabase
     .from("projects")
     .update({ status: "archived" })
@@ -31,8 +42,8 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   return NextResponse.json({ message: "Project archived successfully" }, { status: 200 });
 }
 
-export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
-  const { id } = await context.params;
+export async function GET(request: NextRequest, { params }: Context) {
+  const { id } = await params;
   
   // Fetch project with author details
   const { data: project, error } = await supabase
@@ -78,7 +89,6 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
     console.error("Error fetching team members:", teamError);
   }
 
-  // Fetch project stats
   const { count: views } = await supabase
     .from("project_views")
     .select("*", { count: "exact", head: true })
@@ -89,7 +99,6 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
     .select("*", { count: "exact", head: true })
     .eq("project_id", id);
 
-  // Transform the data
   const transformedProject = {
     ...project,
     skillsNeeded: project.skills_needed || [],
@@ -101,15 +110,18 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
     views: views || 0,
     interested: interested || 0,
     currentTeam: (() => {
-      const teamFromMembers = (teamMembers || []).map((member: Record<string, unknown>) => ({
-        id: member.user.id,
-        name: member.user.name,
-        username: member.user.username,
-        role: member.role,
-        joinedAt: member.joined_at,
-        bio: member.user.bio,
-        skills: member.user.skills || []
-      }));
+      const teamFromMembers = (teamMembers || []).map((member: TeamMember) => {
+        const user = member.user && member.user.length > 0 ? member.user[0] : undefined;
+        return {
+          id: user?.id,
+          name: user?.name,
+          username: user?.username,
+          role: member.role,
+          joinedAt: member.joined_at,
+          bio: user?.bio,
+          skills: user?.skills || []
+        };
+      });
 
       const authorInTeam = teamFromMembers.some(member => member.id === project.author.id);
       if (!authorInTeam) {

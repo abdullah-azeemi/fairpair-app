@@ -1,15 +1,15 @@
-import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { NextRequest, NextResponse } from "next/server";
+
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../../auth/[...nextauth]/authOptions";
+import { supabase } from "@/utils/supabase";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+type Context = {
+  params: Promise<{ id: string }>;
+};
 
-export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
-  const { id } = await context.params;
+export async function GET(request: NextRequest, { params }: Context) {
+  const { id } = await params;
   
   const { data: teamMembers, error } = await supabase
     .from("project_members")
@@ -32,14 +32,14 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   return NextResponse.json(teamMembers || []);
 }
 
-export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
+export async function POST(request: NextRequest, { params }: Context) {
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
   if (!userId) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
-  const { id } = await context.params;
+  const { id } = await params;
   const body = await request.json();
   const { memberId, role } = body;
 
@@ -65,7 +65,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     .limit(1);
 
   if (tableCheck && tableCheck.code === 'PGRST204') {
-    // Table doesn't exist, create it
+    
     const { error: createTableError } = await supabase.rpc('exec_sql', {
       sql: `
         CREATE TABLE IF NOT EXISTS project_members (
@@ -122,43 +122,16 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   return NextResponse.json(data);
 }
 
-export async function DELETE(request: Request, context: { params: Promise<{ id: string }> }) {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?.id;
-  if (!userId) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-  }
-
-  const { id } = await context.params;
-  const { searchParams } = new URL(request.url);
-  const memberId = searchParams.get("memberId");
-
-  if (!memberId) {
-    return NextResponse.json({ error: "Missing member ID" }, { status: 400 });
-  }
-
-  // Check if user is project owner
-  const { data: project } = await supabase
-    .from("projects")
-    .select("author_id")
-    .eq("id", id)
-    .single();
-
-  if (!project || project.author_id !== userId) {
-    return NextResponse.json({ error: "Not authorized" }, { status: 403 });
-  }
-
-  // Remove team member
+export async function DELETE(request: NextRequest, { params }: Context) {
+  const { id } = await params;
   const { error } = await supabase
-    .from("project_members")
+    .from("project_team")
     .delete()
-    .eq("project_id", id)
-    .eq("user_id", memberId);
+    .eq("project_id", id);
 
   if (error) {
-    console.error("Error removing team member:", error);
+    console.error("Error deleting project team:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
-
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ message: "Project team deleted successfully" }, { status: 200 });
 } 

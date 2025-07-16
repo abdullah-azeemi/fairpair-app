@@ -1,8 +1,12 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/utils/supabase";
 
-export async function DELETE(request: Request, context: { params: { id: string } }) {
-  const { id } = context.params;
+type Context = {
+  params: Promise<{ id: string }>;
+};
+
+export async function DELETE(req: NextRequest, { params }: Context) {
+  const { id } = await params;
   const { error } = await supabase
     .from("projects")
     .delete()

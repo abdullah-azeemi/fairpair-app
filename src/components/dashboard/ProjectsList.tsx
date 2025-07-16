@@ -75,16 +75,19 @@ export default function ProjectList(){
                         </div>
                         <p className="text-gray-600 text-sm mb-2">{project.description}</p>
                         <div className="flex flex-wrap gap-1 mb-2">
-                          {project.skills && project.skills.map((skill: string) => (
-                            <Badge key={skill} variant="outline" className="text-xs">
-                              {skill}
-                            </Badge>
-                          ))}
+                          {Array.isArray(project.skills) &&
+                            project.skills.map((skill: string) => (
+                              <Badge key={skill} variant="outline" className="text-xs">
+                                {skill}
+                              </Badge>
+                            ))}
                         </div>
                         <div className="flex items-center gap-4 text-xs text-gray-500">
                           <span className="flex items-center">
                             <Clock size={12} className="mr-1" />
-                            {formatDistanceToNow(new Date(project.createdAt), { addSuffix: true })}
+                            {project.createdAt
+                              ? formatDistanceToNow(new Date(project.createdAt), { addSuffix: true })
+                              : "Unknown date"}
                           </span>
                           <span className="flex items-center">
                             <Eye size={12} className="mr-1" />

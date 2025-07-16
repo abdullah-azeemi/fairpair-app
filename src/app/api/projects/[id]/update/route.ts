@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../../auth/[...nextauth]/authOptions";
@@ -8,14 +8,18 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
+type Context = {
+  params: Promise<{ id: string }>;
+};
+
+export async function PATCH(request: NextRequest, { params }: Context) {
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
   if (!userId) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
-  const { id } = await context.params;
+  const { id } = await params;
   const body = await request.json();
   
 

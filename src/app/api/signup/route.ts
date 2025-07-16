@@ -20,6 +20,10 @@ export async function POST(req: Request) {
     }
     return NextResponse.json({ success: true, user: newUser });
   } catch (error: unknown) {
-    return NextResponse.json({ success: false, error: error?.message || JSON.stringify(error) }, { status: 500 });
+    const errorMessage =
+      typeof error === "object" && error !== null && "message" in error
+        ? (error as { message: string }).message
+        : JSON.stringify(error);
+    return NextResponse.json({ success: false, error: errorMessage }, { status: 500 });
   }
 }
