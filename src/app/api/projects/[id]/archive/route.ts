@@ -5,7 +5,7 @@ type Context = {
   params: Promise<{ id: string }>;
 };
 
-export async function DELETE(req: NextRequest, { params }: Context) {
+export async function DELETE(request: NextRequest, { params }: Context) {
   const { id } = await params;
   const { error } = await supabase
     .from("projects")
