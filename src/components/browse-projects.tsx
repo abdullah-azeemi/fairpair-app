@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import useSWR from 'swr';
 import ProjectsGrid from './ProjectsGrid';
 import { Button } from "@/components/ui/button";
@@ -22,9 +22,18 @@ interface Project {
 export default function BrowseProjectsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 300); 
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   
   const fetcher = (url: string) => fetch(url).then(res => res.json());
   const { data: allProjects, error, isLoading } = useSWR('/api/projects', fetcher);
+
+  useEffect(() => {
+    fetch('/api/user')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.id) setCurrentUserId(data.id);
+      });
+  }, []);
 
   const filteredProjects = useMemo(() => {
     if (!allProjects || !debouncedSearchTerm.trim()) {
@@ -50,7 +59,7 @@ export default function BrowseProjectsPage() {
       {/* Header */}
       <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
             <div>
               <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 Browse Projects
@@ -58,7 +67,7 @@ export default function BrowseProjectsPage() {
               <p className="text-gray-600 mt-1">Discover amazing projects and find your next collaboration</p>
             </div>
             <Link href="/projects/new">
-              <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
+              <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white w-full sm:w-auto mt-4 sm:mt-0">
                 Post Project
               </Button>
             </Link>
@@ -94,7 +103,7 @@ export default function BrowseProjectsPage() {
         
         {isLoading && <div>Loading projects...</div>}
         {error && <div className="text-red-500">Failed to load projects</div>}
-        {filteredProjects && filteredProjects.length > 0 && <ProjectsGrid projects={filteredProjects} />}
+        {filteredProjects && filteredProjects.length > 0 && currentUserId && <ProjectsGrid projects={filteredProjects} currentUserId={currentUserId} />}
         {filteredProjects && filteredProjects.length === 0 && (
           <div className="text-center py-12">
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">

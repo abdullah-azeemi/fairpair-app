@@ -7,7 +7,6 @@ import {
   Users,
   Upload,
   Search,
-  Star,
   Code,
   Rocket,
   Heart,
@@ -281,89 +280,6 @@ export default function HeroSection() {
       <section className="py-20 bg-white/50 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Success Stories</h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              See how Fair Pair has helped developers build amazing projects and form lasting partnerships.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
-              <CardContent className="p-6">
-                <div className="flex items-center mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} size={16} className="text-yellow-400 fill-current" />
-                  ))}
-                </div>
-                <p className="text-gray-700 mb-4">
-                  &quot;Fair Pair helped me find the perfect co-founder for my AI startup. We&apos;ve raised $500K and are growing
-                  fast!&quot;
-                </p>
-                <div className="flex items-center">
-                  <Avatar className="w-10 h-10 mr-3">
-                    <AvatarImage src="/placeholder.svg?height=40&width=40" />
-                    <AvatarFallback>SC</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="font-semibold text-gray-900">Sarah Chen</p>
-                    <p className="text-sm text-gray-600">AI Startup Founder</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
-              <CardContent className="p-6">
-                <div className="flex items-center mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} size={16} className="text-yellow-400 fill-current" />
-                  ))}
-                </div>
-                <p className="text-gray-700 mb-4">
-                  &quot;I found an amazing team for my open-source project. We now have 10K+ GitHub stars and growing!&quot;
-                </p>
-                <div className="flex items-center">
-                  <Avatar className="w-10 h-10 mr-3">
-                    <AvatarImage src="/placeholder.svg?height=40&width=40" />
-                    <AvatarFallback>MR</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="font-semibold text-gray-900">Mike Rodriguez</p>
-                    <p className="text-sm text-gray-600">Open Source Maintainer</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
-              <CardContent className="p-6">
-                <div className="flex items-center mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} size={16} className="text-yellow-400 fill-current" />
-                  ))}
-                </div>
-                <p className="text-gray-700 mb-4">
-                  &quot;The collaboration tools are fantastic. We built and launched our app in just 3 months!&quot;
-                </p>
-                <div className="flex items-center">
-                  <Avatar className="w-10 h-10 mr-3">
-                    <AvatarImage src="/placeholder.svg?height=40&width=40" />
-                    <AvatarFallback>EW</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="font-semibold text-gray-900">Emma Wilson</p>
-                    <p className="text-sm text-gray-600">Full-Stack Developer</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      <section className="py-20">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Trending Projects</h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               Discover the most popular projects on Fair Pair and find your next collaboration opportunity.
@@ -530,7 +446,7 @@ export default function HeroSection() {
 
       <footer className="bg-gray-900 text-white py-16">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="col-span-1 md:col-span-2">
               <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-4">
                 Fair Pair
@@ -559,34 +475,18 @@ export default function HeroSection() {
                   <Link href="/projects" className="hover:text-white transition-colors">Browse Projects</Link>
                 </li>
                 <li>
-                  <Link href="/signup" className="hover:text-white transition-colors">Sign Up</Link>
+                  <Link href="/signup">
+                    <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white">Sign Up</Button>
+                  </Link>
                 </li>
                 <li>
-                  <Link href="/login" className="hover:text-white transition-colors">Login</Link>
-                </li>
-                <li>
-                  <Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link>
+                  <Link href="/login">
+                    <Button className="w-full bg-white text-blue-600 border border-blue-600">Login</Button>
+                  </Link>
                 </li>
               </ul>
             </div>
 
-            <div>
-              <h4 className="font-semibold mb-4">Company</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li>
-                  <Link href="/about" className="hover:text-white transition-colors">About</Link>
-                </li>
-                <li>
-                  <Link href="/blog" className="hover:text-white transition-colors">Blog</Link>
-                </li>
-                <li>
-                  <Link href="/careers" className="hover:text-white transition-colors">Careers</Link>
-                </li>
-                <li>
-                  <Link href="/contact" className="hover:text-white transition-colors">Contact</Link>
-                </li>
-              </ul>
-            </div>
           </div>
 
           <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">

@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, ArrowRight, Plus, X, Github, Linkedin, Mail, User, Code, Heart, CheckCircle } from "lucide-react"
+import { ArrowLeft, ArrowRight, Plus, X, Github, Linkedin, User, Code, Heart, CheckCircle } from "lucide-react"
 import Link from "next/link"
 import axios from "axios"
 import { useRouter } from "next/navigation"
@@ -42,13 +42,28 @@ export default function SignupPage() {
     confirmPassword: "",
   })
 
+  const [emailError, setEmailError] = useState<string>("");
+
+  function validateEmail(email: string) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
   const [skillInput, setSkillInput] = useState("")
   const [interestInput, setInterestInput] = useState("")
 
   const router = useRouter()
 
   const handleNext = () => {
-    if (currentStep === 1 && formData.name && formData.username && formData.password && formData.confirmPassword) {
+    if (
+      currentStep === 1 &&
+      formData.name &&
+      formData.username &&
+      formData.email &&
+      validateEmail(formData.email) &&
+      formData.password &&
+      formData.confirmPassword &&
+      formData.password === formData.confirmPassword
+    ) {
       setCurrentStep(2)
     }
   }
@@ -217,6 +232,31 @@ export default function SignupPage() {
                   </div>
                 </div>
                 <div className="space-y-2">
+                  <Label htmlFor="email" className="text-sm font-medium">
+                    Email *
+                  </Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="Enter your email address"
+                    value={formData.email}
+                    onChange={(e) => {
+                      setFormData((prev) => ({ ...prev, email: e.target.value }))
+                      setEmailError(
+                        !e.target.value
+                          ? "Email is required"
+                          : !validateEmail(e.target.value)
+                          ? "Please enter a valid email address"
+                          : ""
+                      );
+                    }}
+                    className="h-11 transition-all duration-300 focus:ring-2 focus:ring-blue-500"
+                  />
+                  {emailError && (
+                    <p className="text-xs text-red-500">{emailError}</p>
+                  )}
+                </div>
+                <div className="space-y-2">
                   <Label htmlFor="password" className="text-sm font-medium">
                     Password *
                   </Label>
@@ -250,7 +290,15 @@ export default function SignupPage() {
 
                 <Button
                   onClick={handleNext}
-                  disabled={!formData.name || !formData.username}
+                  disabled={
+                    !formData.name ||
+                    !formData.username ||
+                    !formData.email ||
+                    !validateEmail(formData.email) ||
+                    !formData.password ||
+                    !formData.confirmPassword ||
+                    formData.password !== formData.confirmPassword
+                  }
                   className="w-full h-11 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium transition-all duration-300 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Continue
@@ -390,17 +438,6 @@ export default function SignupPage() {
                         placeholder="LinkedIn profile URL"
                         value={formData.linkedin}
                         onChange={(e) => setFormData((prev) => ({ ...prev, linkedin: e.target.value }))}
-                        className="pl-10 h-10"
-                      />
-                    </div>
-
-                    <div className="relative">
-                      <Mail size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                      <Input
-                        type="email"
-                        placeholder="Contact email"
-                        value={formData.email}
-                        onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
                         className="pl-10 h-10"
                       />
                     </div>

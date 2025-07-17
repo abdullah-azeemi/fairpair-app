@@ -4,9 +4,9 @@ import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Send, Paperclip, Smile } from "lucide-react"
-import { useSearchParams, useRouter } from "next/navigation"
+import { Send, Paperclip, Smile, LayoutDashboard } from "lucide-react"
+import { useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { io, Socket } from "socket.io-client"
 
 type Message = {
@@ -15,6 +15,7 @@ type Message = {
   recipient: string | null;
   time: string;
   isOwn?: boolean;
+  timestamp?: string;
 };
 
 type SupabaseMessage = {
@@ -44,6 +45,7 @@ export default function MessagesPage() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [fetchedMessages, setFetchedMessages] = useState<Message[]>([]);
   const [recipientUser, setRecipientUser] = useState<User | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const [conversations, setConversations] = useState<ConversationUser[]>([]);
   const router = useRouter();
 
@@ -79,6 +81,7 @@ export default function MessagesPage() {
               sender: msg.sender_id,
               recipient: msg.receiver_id,
               time: new Date(msg.created_at).toLocaleTimeString(),
+              timestamp: msg.created_at, // keep the original timestamp for sorting
               isOwn: msg.sender_id === currentUserId,
             }))
           );
@@ -154,9 +157,47 @@ export default function MessagesPage() {
     }
   };
 
+  function getTimestamp(msg: Message): string {
+    return (msg.timestamp?.toString()) || (msg as { created_at?: string }).created_at || new Date().toISOString();
+  }
+  // Combine and sort messages in ascending order by timestamp
+  const combinedMessages: (Message & { timestamp: string })[] = [
+    ...fetchedMessages.map(msg => ({ ...msg, timestamp: getTimestamp(msg) })),
+    ...socketMessages
+      .filter(
+        (msg) =>
+          (msg.sender === currentUserId && msg.recipient === recipientId) ||
+          (msg.sender === recipientId && msg.recipient === currentUserId)
+      )
+      .map((msg) => ({
+        ...msg,
+        timestamp: getTimestamp(msg),
+      })),
+  ];
+  combinedMessages.sort((a, b) => {
+    if (a.timestamp && b.timestamp) {
+      return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+    }
+    return 0;
+  });
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [combinedMessages.length]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex flex-col items-center justify-center px-2 md:px-0">
-      <div className="w-full max-w-5xl mt-4 md:mt-10 flex flex-col md:grid md:grid-cols-4 gap-2 md:gap-6">
+      <div className="w-full max-w-6xl flex flex-col items-center md:items-start mt-4 mb-4">
+        <a href="/dashboard" className="block">
+          <Button className="rounded-full px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold shadow-md flex items-center gap-2 mx-auto md:mx-0">
+            <LayoutDashboard size={18} />
+            Back to Dashboard
+          </Button>
+        </a>
+      </div>
+      <div className="w-full max-w-6xl mt-0 md:mt-6 flex flex-col md:grid md:grid-cols-4 gap-2 md:gap-6">
         {/* Sidebar */}
         <div className="bg-white/80 backdrop-blur-sm border-0 shadow-xl rounded-2xl p-2 md:p-4 md:col-span-1 h-auto md:h-[60vh] flex flex-col mb-2 md:mb-0">
           <h2 className="text-lg font-semibold mb-2 md:mb-4">Conversations</h2>
@@ -176,14 +217,14 @@ export default function MessagesPage() {
           </div>
         </div>
         {/* Chat Area */}
-        <div className="md:col-span-3 flex flex-col h-[70vh] md:h-[60vh]">
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl flex flex-col flex-1 h-full rounded-2xl mb-2 md:mb-0">
+        <div className="md:col-span-3 flex flex-col h-[80vh] min-h-0">
+          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl flex flex-col h-full rounded-2xl overflow-hidden min-h-0">
             <CardHeader className="pb-2 md:pb-4 border-b border-gray-200">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-0">
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                   Messages
                 </h1>
-                {recipientUser && (
+                {recipientUser && recipientUser.id !== currentUserId && (
                   <span className="text-sm text-gray-500">
                     Chatting with: <b>{recipientUser.username}</b>
                   </span>
@@ -195,37 +236,32 @@ export default function MessagesPage() {
                 )}
               </div>
             </CardHeader>
-            <CardContent className="flex-1 p-2 md:p-0 flex flex-col">
-              <ScrollArea className="flex-1 h-[40vh] md:h-[60vh] p-2 md:p-4">
+            <CardContent className="flex-1 flex flex-col p-0 min-h-0">
+              <div className="flex-1 overflow-y-auto px-2 py-4 min-h-0">
                 <div className="space-y-4">
-                  {[...fetchedMessages, ...socketMessages
-                    .filter(
-                      (msg) =>
-                        (msg.sender === currentUserId && msg.recipient === recipientId) ||
-                        (msg.sender === recipientId && msg.recipient === currentUserId)
-                    )]
-                    .map((message, idx) => (
-                      <div key={idx} className={`flex ${message.isOwn ? "justify-end" : "justify-start"}`}>
-                        <div
-                          className={`max-w-[85vw] md:max-w-[70%] p-3 rounded-2xl ${
-                            message.isOwn
-                              ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white"
-                              : "bg-gray-100 text-gray-900"
-                          }`}
-                        >
-                          <p className="text-sm break-words">{message.content}</p>
-                          <div className={`flex items-center justify-end mt-1 space-x-1`}>
-                            <span className={`text-xs ${message.isOwn ? "text-blue-100" : "text-gray-500"}`}>
-                              {message.time}
-                            </span>
-                          </div>
+                  {combinedMessages.map((message, idx) => (
+                    <div key={idx} className={`flex ${message.isOwn ? "justify-end" : "justify-start"}`}>
+                      <div
+                        className={`max-w-[85vw] md:max-w-[70%] p-3 rounded-2xl ${
+                          message.isOwn
+                            ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white"
+                            : "bg-gray-100 text-gray-900"
+                        }`}
+                      >
+                        <p className="text-sm break-words">{message.content}</p>
+                        <div className={`flex items-center justify-end mt-1 space-x-1`}>
+                          <span className={`text-xs ${message.isOwn ? "text-blue-100" : "text-gray-500"}`}>
+                            {message.time}
+                          </span>
                         </div>
                       </div>
-                    ))}
+                    </div>
+                  ))}
+                  <div ref={messagesEndRef} />
                 </div>
-              </ScrollArea>
+              </div>
             </CardContent>
-            <div className="p-2 md:p-4 border-t border-gray-200 sticky bottom-0 bg-white/80">
+            <div className="p-2 md:p-4 border-t border-gray-200 bg-white/80">
               <div className="flex items-center space-x-2">
                 <Button variant="ghost" size="sm">
                   <Paperclip size={16} />

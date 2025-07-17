@@ -94,32 +94,14 @@ export default function LoginPage() {
           </CardHeader>
 
           <CardContent className="space-y-6">
-            {/* Social Login Buttons */}
-            <div className="grid grid-cols-2 gap-4">
-              <Button
-                variant="outline"
-                className="w-full hover:bg-gray-50 transition-all duration-300 hover:shadow-md"
-                disabled={isLoading}
-              >
-                <Github size={18} className="mr-2" />
-                GitHub
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full hover:bg-gray-50 transition-all duration-300 hover:shadow-md"
-                disabled={isLoading}
-              >
-                <Mail size={18} className="mr-2" />
-                Google
-              </Button>
-            </div>
+            
 
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <Separator className="w-full" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-2 text-gray-500">Or continue with email</span>
+                <span className="bg-white px-2 text-gray-500"></span>
               </div>
             </div>
 
@@ -219,7 +201,7 @@ export default function LoginPage() {
               <div className="w-px h-4 bg-gray-300"></div>
               <div className="flex items-center">
                 <div className="w-2 h-2 bg-blue-500 rounded-full mr-1"></div>
-                Trusted by 25K+ developers
+                Trusted by developers
               </div>
             </div>
           </CardFooter>

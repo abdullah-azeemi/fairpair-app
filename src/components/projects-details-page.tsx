@@ -404,12 +404,12 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
       {/* Header */}
       <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/projects" className="flex items-center text-gray-600 hover:text-gray-900 transition-colors">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
+            <Link href="/projects" className="flex items-center text-gray-600 hover:text-gray-900 transition-colors mb-2 sm:mb-0">
               <ArrowLeft size={20} className="mr-2" />
               Back to Projects
             </Link>
-            <div className="flex items-center space-x-2">
+            <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 justify-start sm:justify-end">
               {isOwner && (
                 <Dialog open={editMode} onOpenChange={setEditMode}>
                   <DialogTrigger asChild>
@@ -418,7 +418,7 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
                       Edit
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                  <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto px-6 sm:px-12">
                     <DialogHeader>
                       <DialogTitle>Edit Project</DialogTitle>
                     </DialogHeader>
@@ -521,37 +521,35 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
             {/* Project Header */}
             <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
               <CardContent className="p-8">
-                <div className="flex items-start justify-between mb-6">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-3">
-                      <h1 className="text-3xl font-bold text-gray-900">{projectData.title}</h1>
-                      {projectData.lookingForCollaborators && (
-                        <Badge className="bg-green-100 text-green-700">
-                          <Users size={12} className="mr-1" />
-                          Open for Collaboration
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
-                      <span className="flex items-center">
-                        <Clock size={14} className="mr-1" />
-                        {formatDistanceToNow(new Date(projectData.createdAt), { addSuffix: true })}
-                      </span>
-                      <span className="flex items-center">
-                        <Eye size={14} className="mr-1" />
-                        {projectData.views} views
-                      </span>
-                      <span className="flex items-center">
-                        <Star size={14} className="mr-1" />
-                        {projectData.interested} interested
-                      </span>
-                      <Badge variant="outline">{projectData.category}</Badge>
-                    </div>
-                  </div>
+                <div className="flex flex-col gap-2 mb-3">
+                  <h1 className="text-3xl font-bold text-gray-900">{projectData.title}</h1>
+                  {projectData.lookingForCollaborators && (
+                    <Badge className="bg-green-100 text-green-700 w-fit">
+                      <Users size={12} className="mr-1" />
+                      Open for Collaboration
+                    </Badge>
+                  )}
                 </div>
+                <div className="grid grid-cols-2 md:flex md:items-center gap-2 text-sm text-gray-600 mb-4">
+                  <span className="flex items-center">
+                    <Clock size={14} className="mr-1" />
+                    {formatDistanceToNow(new Date(projectData.createdAt), { addSuffix: true })}
+                  </span>
+                  <span className="flex items-center">
+                    <Eye size={14} className="mr-1" />
+                    {projectData.views} views
+                  </span>
+                  <span className="flex items-center">
+                    <Star size={14} className="mr-1" />
+                    {projectData.interested} interested
+                  </span>
+                  <Badge variant="outline">{projectData.category}</Badge>
+                </div>
+                
+                <div className="mb-2"></div>
 
                 {/* Project Stats */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                   <div className="text-center p-3 bg-blue-50 rounded-lg">
                     <Target size={20} className="mx-auto text-blue-600 mb-1" />
                     <p className="text-sm font-medium text-blue-900">{projectData.timeline}</p>
@@ -591,32 +589,34 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
                   {!isOwner && (
                     <Button
                       onClick={handleJoinRequest}
-                      className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+                      className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white w-full sm:w-auto"
                     >
                       <Users size={16} className="mr-2" />
                       Request to Join
                     </Button>
                   )}
-                  <Button onClick={handleMessage} variant="outline" className="flex-1">
-                    <MessageCircle size={16} className="mr-2" />
-                    Message Owner
-                  </Button>
+                  {!isOwner && (
+                    <Button onClick={handleMessage} variant="outline" className="flex-1 w-full sm:w-auto">
+                      <MessageCircle size={16} className="mr-2" />
+                      Message Owner
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>
 
             {/* Project Details Tabs */}
-            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
+            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl mt-6">
               <Tabs defaultValue="description" className="w-full">
-                <CardHeader className="pb-4">
-                  <TabsList className="grid w-full grid-cols-4">
-                    <TabsTrigger value="description">Description</TabsTrigger>
-                    <TabsTrigger value="team">Team</TabsTrigger>
-                    <TabsTrigger value="progress">Progress</TabsTrigger>
-                    <TabsTrigger value="tech">Tech Stack</TabsTrigger>
+                <CardHeader className="pb-2">
+                  <TabsList className="w-full flex flex-row gap-1 overflow-x-auto rounded-lg border bg-gray-50 p-1 no-scrollbar">
+                    <TabsTrigger value="description" className="flex-1 min-w-[80px] whitespace-nowrap">Description</TabsTrigger>
+                    <TabsTrigger value="team" className="flex-1 min-w-[80px] whitespace-nowrap">Team</TabsTrigger>
+                    <TabsTrigger value="progress" className="flex-1 min-w-[80px] whitespace-nowrap">Progress</TabsTrigger>
+                    <TabsTrigger value="tech" className="flex-1 min-w-[80px] whitespace-nowrap">Tech Stack</TabsTrigger>
                   </TabsList>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pt-2 pb-4 px-4 sm:px-8 w-full">
                   <TabsContent value="description" className="space-y-4">
                     <div className="prose prose-sm max-w-none">
                       {projectData.description.split("\n\n").map((paragraph, index) => (

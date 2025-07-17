@@ -15,7 +15,7 @@ export type Project = {
   author_id: string,
 };
 
-export default function ProjectsGrid({projects}: {projects: Project[]}){
+export default function ProjectsGrid({projects, currentUserId}: {projects: Project[], currentUserId: string}){
   return <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
   {projects.map((project) => {
     return (
@@ -54,11 +54,13 @@ export default function ProjectsGrid({projects}: {projects: Project[]}){
               View Project
             </Button>
           </Link>
-          <Link href={`/messages?recipient=${project.author_id}`} className="flex-1 mt-2 block">
-            <Button variant="outline" className="w-full h-9 text-blue-600 border-blue-200">
-              Message
-            </Button>
-          </Link>
+          {currentUserId !== project.author_id && (
+            <Link href={`/messages?recipient=${project.author_id}`} className="flex-1 mt-2 block">
+              <Button variant="outline" className="w-full h-9 text-blue-600 border-blue-200">
+                Message
+              </Button>
+            </Link>
+          )}
         </CardContent>
       </Card>
     )
