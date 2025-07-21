@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Send, Paperclip, Smile, LayoutDashboard } from "lucide-react"
+import { Send, Paperclip, Smile, ArrowLeft } from "lucide-react"
 import { useSearchParams } from "next/navigation"
 import { useRouter } from "next/navigation"
 import { io, Socket } from "socket.io-client"
@@ -191,8 +191,8 @@ export default function MessagesPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex flex-col items-center justify-center px-2 md:px-0">
       <div className="w-full max-w-6xl flex flex-col items-center md:items-start mt-4 mb-4">
         <a href="/dashboard" className="block">
-          <Button className="rounded-full px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold shadow-md flex items-center gap-2 mx-auto md:mx-0">
-            <LayoutDashboard size={18} />
+          <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-md flex items-center gap-2">
+            <ArrowLeft size={20} />
             Back to Dashboard
           </Button>
         </a>

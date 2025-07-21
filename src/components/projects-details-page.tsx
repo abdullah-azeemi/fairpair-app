@@ -83,9 +83,9 @@ interface ProjectData {
   category: string
   skillsNeeded: string[]
   timeline: string
-  teamSize: string
-  projectType: string
-  experienceLevel: string
+  teamsize: string
+  project_type: string
+  experience: string
   lookingForCollaborators: boolean
   createdAt: string
   updatedAt: string
@@ -456,7 +456,7 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
                         </div>
                         <div className="flex flex-col gap-2">
                           <Label htmlFor="teamSize">Team Size</Label>
-                          <Select value={editData.teamSize} onValueChange={(value) => setEditData({ ...editData, teamSize: value })}>
+                          <Select value={editData.teamsize} onValueChange={(value) => setEditData({ ...editData, teamsize: value })}>
                             <SelectTrigger>
                               <SelectValue placeholder="Select team size" />
                             </SelectTrigger>
@@ -557,17 +557,17 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
                   </div>
                   <div className="text-center p-3 bg-purple-50 rounded-lg">
                     <Users size={20} className="mx-auto text-purple-600 mb-1" />
-                    <p className="text-sm font-medium text-purple-900">{projectData.teamSize}</p>
+                    <p className="text-sm font-medium text-purple-900">{projectData.teamsize}</p>
                     <p className="text-xs text-purple-700">Team Size</p>
                   </div>
                   <div className="text-center p-3 bg-green-50 rounded-lg">
                     <Zap size={20} className="mx-auto text-green-600 mb-1" />
-                    <p className="text-sm font-medium text-green-900">{projectData.experienceLevel}</p>
+                    <p className="text-sm font-medium text-green-900">{projectData.experience}</p>
                     <p className="text-xs text-green-700">Experience</p>
                   </div>
                   <div className="text-center p-3 bg-orange-50 rounded-lg">
                     <Award size={20} className="mx-auto text-orange-600 mb-1" />
-                    <p className="text-sm font-medium text-orange-900">{projectData.projectType}</p>
+                    <p className="text-sm font-medium text-orange-900">{projectData.project_type}</p>
                     <p className="text-xs text-orange-700">Type</p>
                   </div>
                 </div>

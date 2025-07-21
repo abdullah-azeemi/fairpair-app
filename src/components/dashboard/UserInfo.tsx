@@ -8,7 +8,6 @@ import { Separator } from "@/components/ui/separator"
 import { Progress } from "@/components/ui/progress"
 import {
   Edit,
-  Eye,
   Star,
   Github,
   Linkedin,
@@ -102,10 +101,6 @@ export default function UserInfo() {
               >
                 <Edit size={14} className="mr-2" />
                 Edit Profile
-              </Button>
-              <Button variant="outline" size="sm">
-                <Eye size={14} className="mr-2" />
-                View Public Profile
               </Button>
             </div>
           </div>

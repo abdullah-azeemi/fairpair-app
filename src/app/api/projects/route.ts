@@ -6,7 +6,7 @@ import { authOptions } from "../auth/[...nextauth]/authOptions";
 export async function GET() {
   const { data: projects, error } = await supabase
     .from("projects")
-    .select("id, title, description, skills_needed, created_at, status, author_id")
+    .select("id, title, description, skills_needed, created_at, status, author_id, teamsize, experience, project_type")
     .eq("status", "open")
     .order("created_at", { ascending: false });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

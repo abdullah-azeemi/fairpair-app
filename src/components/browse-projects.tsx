@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import useSWR from 'swr';
 import ProjectsGrid from './ProjectsGrid';
 import { Button } from "@/components/ui/button";
-import { Search } from "lucide-react";
+import { Search, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useDebounce } from '@/lib/hooks';
 
@@ -66,11 +66,19 @@ export default function BrowseProjectsPage() {
               </h1>
               <p className="text-gray-600 mt-1">Discover amazing projects and find your next collaboration</p>
             </div>
-            <Link href="/projects/new">
-              <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white w-full sm:w-auto mt-4 sm:mt-0">
-                Post Project
-              </Button>
-            </Link>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Link href="/dashboard">
+                  <Button variant="outline" className="w-full sm:w-auto flex items-center">
+                    <ArrowLeft size={16} className="mr-2" />
+                    Back to Dashboard
+                  </Button>
+              </Link>
+              <Link href="/projects/new">
+                <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white w-full sm:w-auto">
+                  Post Project
+                </Button>
+              </Link>
+            </div>
           </div>
           
           {/* Quick Search Bar */}

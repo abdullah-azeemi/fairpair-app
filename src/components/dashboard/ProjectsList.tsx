@@ -8,7 +8,6 @@ import {
   Users,
   Clock,
   Trash2,
-  Archive,
 } from "lucide-react"
 import Link from "next/link"
 import useSWR , {mutate} from "swr"
@@ -26,11 +25,6 @@ export default function ProjectList(){
   const handleDelete = async (projectId: string) => {
     if (!confirm("Are you sure you want to delete this project?")) return;
     await fetch(`/api/projects/${projectId}`, { method: "DELETE" });
-    mutate('/api/projects/user');
-  };
-
-  const handleArchive = async (projectId: string) => {
-    await fetch(`/api/projects/${projectId}/archive`, { method: "PATCH" });
     mutate('/api/projects/user');
   };
 
@@ -107,14 +101,6 @@ export default function ProjectList(){
                           onClick={() => handleDelete(project.id)}
                         >
                           <Trash2 size={16} />
-                        </Button>
-                        <Button
-                          variant="secondary"
-                          size="icon"
-                          aria-label="Archive"
-                          onClick={() => handleArchive(project.id)}
-                        >
-                          <Archive size={16} />
                         </Button>
                       </div>
                     </div>
