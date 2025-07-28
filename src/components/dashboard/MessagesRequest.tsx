@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { MessageCircle } from "lucide-react"
+import Link from "next/link";
 
 export type Request = {
   id: string
@@ -40,9 +41,9 @@ export default function MessagesRequest({ incomingRequests }: { incomingRequests
                   <AvatarFallback>{request.from[0]}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <p className="text-lg font-bold mb-1">{request.message}</p>
+                  <p className="text-base font-semibold mb-1">{request.from}</p>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="font-medium text-sm text-gray-900">{request.from}</span>
+                    <span className="font-medium text-xs text-gray-900">{request.message}</span>
                     <Badge variant="outline" className="text-xs">
                       {request.type}
                     </Badge>
@@ -52,9 +53,11 @@ export default function MessagesRequest({ incomingRequests }: { incomingRequests
               </div>
             </div>
           ))}
-          <Button variant="outline" className="w-full" size="sm">
-            View All Messages
-          </Button>
+          <Link href="/messages" className="w-full">
+            <Button variant="outline" className="w-full" size="sm">
+              View All Messages
+            </Button>
+          </Link>
         </CardContent>
       </Card>
     </div>

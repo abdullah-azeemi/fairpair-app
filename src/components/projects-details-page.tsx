@@ -122,6 +122,7 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
   const [isLoading, setIsLoading] = useState(true);
   const [isInterested, setIsInterested] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
 
   const TIMELINE_OPTIONS = [
     "1-2 weeks",
@@ -141,6 +142,21 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
 
   const isValidId = !!params?.id;
 
+  const fetchCurrentUser = useCallback(async () => {
+    try {
+      const response = await fetch('/api/user');
+      if (response.ok) {
+        const user = await response.json();
+        setCurrentUser(user);
+      } else {
+        router.push("/login");
+      }
+    } catch (error) {
+      console.error("Error fetching current user:", error);
+      router.push("/login");
+    }
+  }, [router]);
+  
   const fetchProjectData = useCallback(async () => {
     try {
       const response = await fetch(`/api/projects/${params.id}`);
@@ -167,8 +183,10 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
     if (params.id) {
       fetchCurrentUser();
     }
-  }, [params.id]);
+  }, [params.id, fetchCurrentUser]);
 
+  
+  
   useEffect(() => {
     if (params.id && currentUser) {
       fetchProjectData();
@@ -187,19 +205,7 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
     );
   }
 
-  const fetchCurrentUser = async () => {
-    try {
-      const response = await fetch('/api/user');
-      if (response.ok) {
-        const user = await response.json();
-        setCurrentUser(user);
-      } else {
-        console.error("Failed to fetch user:", response.status, response.statusText);
-      }
-    } catch (error) {
-      console.error("Error fetching current user:", error);
-    }
-  };
+  
 
   const handleInterest = async () => {
     if (!currentUser?.id) {
@@ -374,6 +380,16 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
     setProgressData({ ...progressData, milestones: updatedMilestones })
   }
 
+  const handleShare = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2000);
+    } catch {
+      alert("Failed to copy link");
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
@@ -496,9 +512,9 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
                   </DialogContent>
                 </Dialog>
               )}
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" onClick={handleShare}>
                 <Share2 size={16} className="mr-2" />
-                Share
+                {shareCopied ? "Copied!" : "Share"}
               </Button>
               <Button
                 variant={isInterested ? "default" : "outline"}

@@ -9,13 +9,23 @@ const supabase = createClient(
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const userId = searchParams.get("userId");
+  const recipientId = searchParams.get("recipientId");
   if (!userId) return NextResponse.json({ error: "Missing userId" }, { status: 400 });
 
-  const { data, error } = await supabase
-    .from("messages")
-    .select("id, sender_id, receiver_id, content, created_at")
-    .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
-    .order("created_at", { ascending: false });
+  let data, error;
+  if (recipientId) {
+    ({ data, error } = await supabase
+      .from("messages")
+      .select("id, sender_id, receiver_id, content, created_at")
+      .or(`and(sender_id.eq.${userId},receiver_id.eq.${recipientId}),and(sender_id.eq.${recipientId},receiver_id.eq.${userId})`)
+      .order("created_at", { ascending: true }));
+  } else {
+    ({ data, error } = await supabase
+      .from("messages")
+      .select("id, sender_id, receiver_id, content, created_at")
+      .eq("receiver_id", userId)
+      .order("created_at", { ascending: false }));
+  }
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json(data);

@@ -58,21 +58,32 @@ export default function MessagesPage() {
   }, []);
 
   useEffect(() => {
-    const socket = io()
-    socketRef.current = socket
+    const socket = io();
+    socketRef.current = socket;
     socket.on("message", (data: Message) => {
-      setSocketMessages((prev) => [...prev, data])
-    })
+     
+      setSocketMessages((prev) => {
+        const isDuplicate = prev.some(
+          (msg) =>
+            msg.content === data.content &&
+            msg.sender === data.sender &&
+            msg.recipient === data.recipient &&
+            msg.time === data.time
+        );
+        if (isDuplicate) return prev;
+        return [...prev, data];
+      });
+    });
     return () => {
-      socket.disconnect()
-    }
-  }, [])
+      socket.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
-    if (!currentUserId) return;
+    if (!currentUserId || !recipientId) return;
     const fetchMessages = async () => {
       try {
-        const res = await fetch(`/api/messages?userId=${currentUserId}`);
+        const res = await fetch(`/api/messages?userId=${currentUserId}&recipientId=${recipientId}`);
         const data = await res.json();
         if (res.ok && Array.isArray(data)) {
           setFetchedMessages(
@@ -80,8 +91,8 @@ export default function MessagesPage() {
               content: msg.content,
               sender: msg.sender_id,
               recipient: msg.receiver_id,
-              time: new Date(msg.created_at).toLocaleTimeString(),
-              timestamp: msg.created_at, // keep the original timestamp for sorting
+              time: new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              timestamp: msg.created_at,
               isOwn: msg.sender_id === currentUserId,
             }))
           );
@@ -93,7 +104,7 @@ export default function MessagesPage() {
       }
     };
     fetchMessages();
-  }, [currentUserId]);
+  }, [currentUserId, recipientId]);
 
   useEffect(() => {
     if (!recipientId || recipientId === currentUserId) {
@@ -140,16 +151,15 @@ export default function MessagesPage() {
           console.error('Error saving message:', data);
           return;
         }
-        // Real-time emit
+        // Real-time emit (do not add to UI here)
         const msgData: Message = {
           content: newMessage,
           sender: currentUserId,
           recipient: recipientId,
-          time: new Date().toLocaleTimeString(),
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           isOwn: true,
         };
         socketRef.current.emit("message", msgData);
-        setSocketMessages((prev) => [...prev, msgData]);
         setNewMessage("");
       } catch (err) {
         console.error('Error sending message:', err);
@@ -160,7 +170,6 @@ export default function MessagesPage() {
   function getTimestamp(msg: Message): string {
     return (msg.timestamp?.toString()) || (msg as { created_at?: string }).created_at || new Date().toISOString();
   }
-  // Combine and sort messages in ascending order by timestamp
   const combinedMessages: (Message & { timestamp: string })[] = [
     ...fetchedMessages.map(msg => ({ ...msg, timestamp: getTimestamp(msg) })),
     ...socketMessages
