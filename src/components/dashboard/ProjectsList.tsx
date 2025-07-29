@@ -56,9 +56,11 @@ export default function ProjectList(){
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          <h4 className="font-semibold text-gray-900 hover:text-blue-600 cursor-pointer">
-                            {project.title}
-                          </h4>
+                          <Link href={`/projects/${project.id}`} className="flex-1">
+                            <h4 className="font-semibold text-gray-900 hover:text-blue-600 cursor-pointer transition-colors">
+                              {project.title}
+                            </h4>
+                          </Link>
                           <Badge
                             className={
                               project.status === "active" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-700"
@@ -93,12 +95,13 @@ export default function ProjectList(){
                           </span>
                         </div>
                       </div>
-                      <div className="flex flex-col gap-2 sm:flex-row sm:gap-2">
+                      <div className="flex flex-col gap-2 sm:flex-row sm:gap-2 ml-4">
                         <Button
                           variant="destructive"
                           size="icon"
                           aria-label="Delete"
                           onClick={() => handleDelete(project.id)}
+                          className="hidden sm:flex"
                         >
                           <Trash2 size={16} />
                         </Button>

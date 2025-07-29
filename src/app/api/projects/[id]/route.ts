@@ -34,59 +34,65 @@ export async function DELETE(request: NextRequest, { params }: Context) {
 export async function GET(request: NextRequest, { params }: Context) {
   const { id } = await params;
   
-  // Fetch project with author details
-  const { data: project, error } = await supabase
-    .from("projects")
-    .select(`
-      *,
-      author:users!projects_author_id_fkey(
-        id,
-        name,
-        username,
-        bio,
-        skills,
-        github,
-        linkedin,
-        email,
-        created_at
-      )
-    `)
-    .eq("id", id)
-    .single();
+  // Fetch project with author details and team members in parallel
+  const [projectResult, teamMembersResult, viewsResult, interestedResult] = await Promise.all([
+    supabase
+      .from("projects")
+      .select(`
+        *,
+        author:users!projects_author_id_fkey(
+          id,
+          name,
+          username,
+          bio,
+          skills,
+          github,
+          linkedin,
+          email,
+          created_at
+        )
+      `)
+      .eq("id", id)
+      .single(),
+    
+    supabase
+      .from("project_members")
+      .select(`
+        role,
+        joined_at,
+        user:users(
+          id,
+          name,
+          username,
+          bio,
+          skills
+        )
+      `)
+      .eq("project_id", id)
+      .eq("status", "accepted"),
+    
+    supabase
+      .from("project_views")
+      .select("*", { count: "exact", head: true })
+      .eq("project_id", id),
+    
+    supabase
+      .from("project_interests")
+      .select("*", { count: "exact", head: true })
+      .eq("project_id", id)
+  ]);
+
+  const { data: project, error } = projectResult;
+  const { data: teamMembers, error: teamError } = teamMembersResult;
+  const { count: views } = viewsResult;
+  const { count: interested } = interestedResult;
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   if (!project) return NextResponse.json({ error: "Project not found" }, { status: 404 });
 
-  // Fetch team members (if any)
-  const { data: teamMembers, error: teamError } = await supabase
-    .from("project_members")
-    .select(`
-      role,
-      joined_at,
-      user:users(
-        id,
-        name,
-        username,
-        bio,
-        skills
-      )
-    `)
-    .eq("project_id", id)
-    .eq("status", "accepted");
-
   if (teamError) {
     console.error("Error fetching team members:", teamError);
   }
-
-  const { count: views } = await supabase
-    .from("project_views")
-    .select("*", { count: "exact", head: true })
-    .eq("project_id", id);
-
-  const { count: interested } = await supabase
-    .from("project_interests")
-    .select("*", { count: "exact", head: true })
-    .eq("project_id", id);
 
   const transformedProject = {
     ...project,
@@ -142,5 +148,10 @@ export async function GET(request: NextRequest, { params }: Context) {
     }
   };
 
-  return NextResponse.json(transformedProject, { status: 200 });
+  return NextResponse.json(transformedProject, { 
+    status: 200,
+    headers: {
+      'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60'
+    }
+  });
 }

@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../../../auth/[...nextauth]/authOptions";
 import { supabase } from "@/utils/supabase";
 
+
 type Context = {
   params: Promise<{ id: string }>;
 };
@@ -43,63 +44,42 @@ export async function POST(request: NextRequest, { params }: Context) {
   const body = await request.json();
   const { memberId, role } = body;
 
+  console.log("Adding team member:", { projectId: id, memberId, role, userId });
+
   if (!memberId || !role) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
-  // Check if user is project owner
-  const { data: project } = await supabase
-    .from("projects")
-    .select("author_id")
-    .eq("id", id)
-    .single();
+  // Check if user is project owner and if member already exists in parallel
+  const [projectResult, existingMemberResult] = await Promise.all([
+    supabase
+      .from("projects")
+      .select("author_id")
+      .eq("id", id)
+      .single(),
+    
+    supabase
+      .from("project_members")
+      .select("id")
+      .eq("project_id", id)
+      .eq("user_id", memberId)
+      .single()
+  ]);
+
+  const { data: project, error: projectError } = projectResult;
+  const { data: existingMember } = existingMemberResult;
+
+  if (projectError) {
+    console.error("Error checking project ownership:", projectError);
+    return NextResponse.json({ error: "Project not found" }, { status: 404 });
+  }
 
   if (!project || project.author_id !== userId) {
     return NextResponse.json({ error: "Not authorized" }, { status: 403 });
   }
 
-  // Check if project_members table exists, if not create it
-  const { error: tableCheck } = await supabase
-    .from("project_members")
-    .select("id")
-    .limit(1);
-
-  if (tableCheck && tableCheck.code === 'PGRST204') {
-    
-    const { error: createTableError } = await supabase.rpc('exec_sql', {
-      sql: `
-        CREATE TABLE IF NOT EXISTS project_members (
-          id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-          project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
-          user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-          role TEXT NOT NULL,
-          status TEXT DEFAULT 'pending',
-          joined_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-          UNIQUE(project_id, user_id)
-        );
-        
-        ALTER TABLE project_members ENABLE ROW LEVEL SECURITY;
-        
-        CREATE POLICY "Users can view project members" ON project_members
-          FOR SELECT USING (true);
-        
-        CREATE POLICY "Project owners can manage team" ON project_members
-          FOR ALL USING (
-            EXISTS (
-              SELECT 1 FROM projects 
-              WHERE id = project_members.project_id 
-              AND author_id = auth.uid()
-            )
-          );
-        
-        GRANT ALL ON project_members TO service_role;
-      `
-    });
-
-    if (createTableError) {
-      console.error("Error creating project_members table:", createTableError);
-      return NextResponse.json({ error: "Failed to setup team management" }, { status: 500 });
-    }
+  if (existingMember) {
+    return NextResponse.json({ error: "User is already a team member" }, { status: 400 });
   }
 
   // Add team member
@@ -119,19 +99,45 @@ export async function POST(request: NextRequest, { params }: Context) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+  console.log("Team member added successfully:", data);
   return NextResponse.json(data);
 }
 
 export async function DELETE(request: NextRequest, { params }: Context) {
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
+  if (!userId) {
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  }
+
   const { id } = await params;
+  const { searchParams } = new URL(request.url);
+  const memberId = searchParams.get("memberId");
+
+  if (!memberId) {
+    return NextResponse.json({ error: "Missing memberId parameter" }, { status: 400 });
+  }
+
+  // Check if user is project owner
+  const { data: project } = await supabase
+    .from("projects")
+    .select("author_id")
+    .eq("id", id)
+    .single();
+
+  if (!project || project.author_id !== userId) {
+    return NextResponse.json({ error: "Not authorized" }, { status: 403 });
+  }
+
   const { error } = await supabase
-    .from("project_team")
+    .from("project_members")
     .delete()
-    .eq("project_id", id);
+    .eq("project_id", id)
+    .eq("user_id", memberId);
 
   if (error) {
-    console.error("Error deleting project team:", error);
+    console.error("Error removing team member:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
-  return NextResponse.json({ message: "Project team deleted successfully" }, { status: 200 });
+  return NextResponse.json({ message: "Team member removed successfully" }, { status: 200 });
 } 

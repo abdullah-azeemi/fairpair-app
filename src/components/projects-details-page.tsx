@@ -253,13 +253,22 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
     }
 
     try {
+      console.log("Searching users with query:", query)
       const response = await fetch(`/api/users/search?q=${query}&projectId=${params.id}&excludeTeam=true`)
+      console.log("Search response status:", response.status)
+      
       if (response.ok) {
         const users = await response.json()
+        console.log("Search results:", users)
         setSearchResults(users)
+      } else {
+        const errorText = await response.text()
+        console.error("Failed to search users:", response.status, response.statusText, errorText)
+        setSearchResults([])
       }
     } catch (error) {
       console.error("Error searching users:", error)
+      setSearchResults([])
     }
   }
 
@@ -267,6 +276,7 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
     if (!selectedUser || !newMemberRole) return
 
     try {
+      console.log("Adding team member:", { memberId: selectedUser.id, role: newMemberRole })
       const response = await fetch(`/api/projects/${params.id}/team`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -276,16 +286,31 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
         })
       })
 
+      console.log("Add member response status:", response.status)
+      
       if (response.ok) {
+        const result = await response.json()
+        console.log("Add member success:", result)
         setShowAddMember(false)
         setSelectedUser(null)
         setNewMemberRole("")
         setSearchQuery("")
         setSearchResults([])
         fetchProjectData() // Refresh project data
+        alert("Team member added successfully!")
+      } else {
+        try {
+          const errorData = await response.json()
+          console.error("Add member error:", errorData)
+          alert(`Failed to add team member: ${errorData.error || 'Unknown error'}`)
+        } catch (parseError) {
+          console.error("Add member error (non-JSON response):", response.status, response.statusText, parseError)
+          alert(`Failed to add team member: ${response.status} ${response.statusText}`)
+        }
       }
     } catch (error) {
       console.error("Error adding team member:", error)
+      alert("Failed to add team member. Please try again.")
     }
   }
 
@@ -299,9 +324,19 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
 
       if (response.ok) {
         fetchProjectData() // Refresh project data
+        alert("Team member removed successfully!")
+      } else {
+        try {
+          const errorData = await response.json()
+          alert(`Failed to remove team member: ${errorData.error || 'Unknown error'}`)
+        } catch (parseError) {
+          console.error("Remove member error (non-JSON response):", response.status, response.statusText, parseError)
+          alert(`Failed to remove team member: ${response.status} ${response.statusText}`)
+        }
       }
     } catch (error) {
       console.error("Error removing team member:", error)
+      alert("Failed to remove team member. Please try again.")
     }
   }
 
@@ -660,7 +695,7 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
                             <DialogHeader>
                               <DialogTitle>Add Team Member</DialogTitle>
                             </DialogHeader>
-                            <div className="space-y-4">
+                            <div className="space-y-6">
                               <div>
                                 <Label htmlFor="search">Search Users</Label>
                                 <div className="relative">
@@ -732,18 +767,22 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
                           <Avatar className="w-10 h-10">
                             <AvatarFallback>
                               {member.name
-                                .split(" ")
-                                .map((n) => n[0])
-                                .join("")}
+                                ? member.name
+                                    .split(" ")
+                                    .map((n) => n[0])
+                                    .join("")
+                                : member.username
+                                    ? member.username.substring(0, 2).toUpperCase()
+                                    : "U"}
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1">
-                            <h4 className="font-medium text-gray-900">{member.name}</h4>
+                            <h4 className="font-medium text-gray-900">{member.name || member.username || "Unknown User"}</h4>
                             <p className="text-sm text-gray-600">
                               @{member.username} • {member.role}
                             </p>
                           </div>
-                          {isOwner && member.id !== currentUser?.id && (
+                          {isOwner && member.id && member.id !== currentUser?.id && (
                             <Button
                               variant="ghost"
                               size="sm"
