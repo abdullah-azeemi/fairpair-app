@@ -253,17 +253,12 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
     }
 
     try {
-      console.log("Searching users with query:", query)
       const response = await fetch(`/api/users/search?q=${query}&projectId=${params.id}&excludeTeam=true`)
-      console.log("Search response status:", response.status)
-      
       if (response.ok) {
         const users = await response.json()
-        console.log("Search results:", users)
         setSearchResults(users)
       } else {
-        const errorText = await response.text()
-        console.error("Failed to search users:", response.status, response.statusText, errorText)
+        console.error("Failed to search users:", response.status, response.statusText)
         setSearchResults([])
       }
     } catch (error) {
@@ -274,9 +269,7 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
 
   const addTeamMember = async () => {
     if (!selectedUser || !newMemberRole) return
-
     try {
-      console.log("Adding team member:", { memberId: selectedUser.id, role: newMemberRole })
       const response = await fetch(`/api/projects/${params.id}/team`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -285,58 +278,36 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
           role: newMemberRole
         })
       })
-
-      console.log("Add member response status:", response.status)
-      
       if (response.ok) {
-        const result = await response.json()
-        console.log("Add member success:", result)
         setShowAddMember(false)
         setSelectedUser(null)
         setNewMemberRole("")
         setSearchQuery("")
         setSearchResults([])
         fetchProjectData() // Refresh project data
-        alert("Team member added successfully!")
       } else {
-        try {
-          const errorData = await response.json()
-          console.error("Add member error:", errorData)
-          alert(`Failed to add team member: ${errorData.error || 'Unknown error'}`)
-        } catch (parseError) {
-          console.error("Add member error (non-JSON response):", response.status, response.statusText, parseError)
-          alert(`Failed to add team member: ${response.status} ${response.statusText}`)
-        }
+        const errorData = await response.json()
+        console.error("Failed to add team member:", errorData)
       }
     } catch (error) {
       console.error("Error adding team member:", error)
-      alert("Failed to add team member. Please try again.")
     }
   }
 
   const removeTeamMember = async (memberId: string) => {
     if (!confirm("Are you sure you want to remove this team member?")) return
-
     try {
       const response = await fetch(`/api/projects/${params.id}/team?memberId=${memberId}`, {
         method: "DELETE"
       })
-
       if (response.ok) {
         fetchProjectData() // Refresh project data
-        alert("Team member removed successfully!")
       } else {
-        try {
-          const errorData = await response.json()
-          alert(`Failed to remove team member: ${errorData.error || 'Unknown error'}`)
-        } catch (parseError) {
-          console.error("Remove member error (non-JSON response):", response.status, response.statusText, parseError)
-          alert(`Failed to remove team member: ${response.status} ${response.statusText}`)
-        }
+        const errorData = await response.json()
+        console.error("Failed to remove team member:", errorData)
       }
     } catch (error) {
       console.error("Error removing team member:", error)
-      alert("Failed to remove team member. Please try again.")
     }
   }
 
@@ -421,7 +392,7 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
       setShareCopied(true);
       setTimeout(() => setShareCopied(false), 2000);
     } catch {
-      alert("Failed to copy link");
+      console.error("Failed to copy link");
     }
   };
 

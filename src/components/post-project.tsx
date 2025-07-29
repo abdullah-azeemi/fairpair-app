@@ -82,7 +82,7 @@ export default function PostProjectPage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        alert(data.error || "Failed to create project");
+        console.error("Failed to create project:", data.error);
         setIsLoading(false);
         return;
       }
@@ -90,7 +90,6 @@ export default function PostProjectPage() {
       router.push("/projects");
     } catch (err) {
       console.error("Project creation error:", err);
-      alert("An error occurred while creating the project.");
       setIsLoading(false);
     }
   }

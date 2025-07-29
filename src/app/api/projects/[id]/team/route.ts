@@ -44,39 +44,28 @@ export async function POST(request: NextRequest, { params }: Context) {
   const body = await request.json();
   const { memberId, role } = body;
 
-  console.log("Adding team member:", { projectId: id, memberId, role, userId });
-
   if (!memberId || !role) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
-  // Check if user is project owner and if member already exists in parallel
-  const [projectResult, existingMemberResult] = await Promise.all([
-    supabase
-      .from("projects")
-      .select("author_id")
-      .eq("id", id)
-      .single(),
-    
-    supabase
-      .from("project_members")
-      .select("id")
-      .eq("project_id", id)
-      .eq("user_id", memberId)
-      .single()
-  ]);
-
-  const { data: project, error: projectError } = projectResult;
-  const { data: existingMember } = existingMemberResult;
-
-  if (projectError) {
-    console.error("Error checking project ownership:", projectError);
-    return NextResponse.json({ error: "Project not found" }, { status: 404 });
-  }
+  // Check if user is project owner
+  const { data: project } = await supabase
+    .from("projects")
+    .select("author_id")
+    .eq("id", id)
+    .single();
 
   if (!project || project.author_id !== userId) {
     return NextResponse.json({ error: "Not authorized" }, { status: 403 });
   }
+
+  // Check if member is already in the team
+  const { data: existingMember } = await supabase
+    .from("project_members")
+    .select("id")
+    .eq("project_id", id)
+    .eq("user_id", memberId)
+    .single();
 
   if (existingMember) {
     return NextResponse.json({ error: "User is already a team member" }, { status: 400 });
@@ -99,7 +88,6 @@ export async function POST(request: NextRequest, { params }: Context) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  console.log("Team member added successfully:", data);
   return NextResponse.json(data);
 }
 
