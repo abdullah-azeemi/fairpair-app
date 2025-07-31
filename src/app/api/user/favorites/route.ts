@@ -26,7 +26,7 @@ export async function GET() {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  const sorted = favorites.map((id: string) => projects.find((p: any) => p.id === id)).filter(Boolean);
+  const sorted = favorites.map((id: string) => projects.find((p: { id: string }) => p.id === id)).filter(Boolean);
 
   return NextResponse.json(sorted);
 }

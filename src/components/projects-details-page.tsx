@@ -155,7 +155,7 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
       console.error("Error fetching current user:", error);
       setCurrentUser(null);
     }
-  }, [router]);
+  }, []);
   
   const fetchProjectData = useCallback(async () => {
     try {
