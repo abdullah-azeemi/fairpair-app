@@ -67,17 +67,21 @@ export default function BrowseProjectsPage() {
               <p className="text-gray-600 mt-1">Discover amazing projects and find your next collaboration</p>
             </div>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Link href="/dashboard">
-                  <Button variant="outline" className="w-full sm:w-auto flex items-center">
-                    <ArrowLeft size={16} className="mr-2" />
-                    Back to Dashboard
-                  </Button>
-              </Link>
-              <Link href="/projects/new">
-                <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white w-full sm:w-auto">
-                  Post Project
-                </Button>
-              </Link>
+              {currentUserId && (
+                <>
+                  <Link href="/dashboard">
+                    <Button variant="outline" className="w-full sm:w-auto flex items-center">
+                      <ArrowLeft size={16} className="mr-2" />
+                      Back to Dashboard
+                    </Button>
+                  </Link>
+                  <Link href="/projects/new">
+                    <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white w-full sm:w-auto">
+                      Post Project
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
           
@@ -111,7 +115,7 @@ export default function BrowseProjectsPage() {
         
         {isLoading && <div>Loading projects...</div>}
         {error && <div className="text-red-500">Failed to load projects</div>}
-        {filteredProjects && filteredProjects.length > 0 && currentUserId && <ProjectsGrid projects={filteredProjects} currentUserId={currentUserId} />}
+        {filteredProjects && filteredProjects.length > 0 && <ProjectsGrid projects={filteredProjects} currentUserId={currentUserId} />}
         {filteredProjects && filteredProjects.length === 0 && (
           <div className="text-center py-12">
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">

@@ -15,7 +15,7 @@ export type Project = {
   author_id: string,
 };
 
-export default function ProjectsGrid({projects, currentUserId}: {projects: Project[], currentUserId: string}){
+export default function ProjectsGrid({projects, currentUserId}: {projects: Project[], currentUserId: string | null}){
   return <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
   {projects.map((project) => {
     return (
@@ -54,7 +54,7 @@ export default function ProjectsGrid({projects, currentUserId}: {projects: Proje
               View Project
             </Button>
           </Link>
-          {currentUserId !== project.author_id && (
+          {currentUserId && currentUserId !== project.author_id && (
             <Link href={`/messages?recipient=${project.author_id}`} className="flex-1 mt-2 block">
               <Button variant="outline" className="w-full h-9 text-blue-600 border-blue-200">
                 Message

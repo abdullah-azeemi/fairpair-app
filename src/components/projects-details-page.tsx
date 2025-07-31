@@ -149,11 +149,11 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
         const user = await response.json();
         setCurrentUser(user);
       } else {
-        router.push("/login");
+        setCurrentUser(null);
       }
     } catch (error) {
       console.error("Error fetching current user:", error);
-      router.push("/login");
+      setCurrentUser(null);
     }
   }, [router]);
   
@@ -188,11 +188,11 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
   
   
   useEffect(() => {
-    if (params.id && currentUser) {
+    if (params.id) {
       fetchProjectData();
       fetch(`/api/projects/${params.id}/view`, { method: 'POST' }).catch(console.error);
     }
-  }, [params.id, currentUser, fetchProjectData]);
+  }, [params.id, fetchProjectData]);
 
   if (!isValidId) {
     return (
@@ -209,7 +209,7 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
 
   const handleInterest = async () => {
     if (!currentUser?.id) {
-      router.push("/login")
+      router.push("/signup")
       return
     }
 
@@ -232,7 +232,7 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
 
   const handleMessage = () => {
     if (!currentUser?.id) {
-      router.push("/login")
+      router.push("/signup")
       return
     }
     router.push(`/messages?recipient=${projectData?.author.id}`)
@@ -240,7 +240,7 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
 
   const handleJoinRequest = () => {
     if (!currentUser?.id) {
-      router.push("/login")
+      router.push("/signup")
       return
     }
     router.push(`/messages?recipient=${projectData?.author.id}&project=${params.id}`)
@@ -284,7 +284,7 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
         setNewMemberRole("")
         setSearchQuery("")
         setSearchResults([])
-        fetchProjectData() // Refresh project data
+        fetchProjectData() 
       } else {
         const errorData = await response.json()
         console.error("Failed to add team member:", errorData)
@@ -301,7 +301,7 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
         method: "DELETE"
       })
       if (response.ok) {
-        fetchProjectData() // Refresh project data
+        fetchProjectData() 
       } else {
         const errorData = await response.json()
         console.error("Failed to remove team member:", errorData)
@@ -355,7 +355,7 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
 
       if (response.ok) {
         setShowProgressModal(false)
-        fetchProjectData() // Refresh project data
+        fetchProjectData() 
       }
     } catch (error) {
       console.error("Error updating progress:", error)
@@ -522,15 +522,17 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
                 <Share2 size={16} className="mr-2" />
                 {shareCopied ? "Copied!" : "Share"}
               </Button>
-              <Button
-                variant={isInterested ? "default" : "outline"}
-                size="sm"
-                onClick={handleInterest}
-                className={isInterested ? "bg-yellow-500 hover:bg-yellow-600 text-white" : ""}
-              >
-                <Star size={16} className="mr-2" />
-                {isInterested ? "Interested" : "Add to Favorites"}
-              </Button>
+              {currentUser && (
+                <Button
+                  variant={isInterested ? "default" : "outline"}
+                  size="sm"
+                  onClick={handleInterest}
+                  className={isInterested ? "bg-yellow-500 hover:bg-yellow-600 text-white" : ""}
+                >
+                  <Star size={16} className="mr-2" />
+                  {isInterested ? "Interested" : "Add to Favorites"}
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -608,7 +610,7 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
 
                 {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row gap-3">
-                  {!isOwner && (
+                  {!isOwner && currentUser && (
                     <Button
                       onClick={handleJoinRequest}
                       className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white w-full sm:w-auto"
@@ -617,7 +619,7 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsPageProps) 
                       Request to Join
                     </Button>
                   )}
-                  {!isOwner && (
+                  {!isOwner && currentUser && (
                     <Button onClick={handleMessage} variant="outline" className="flex-1 w-full sm:w-auto">
                       <MessageCircle size={16} className="mr-2" />
                       Message Owner
