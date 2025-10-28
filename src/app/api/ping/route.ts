@@ -3,11 +3,14 @@ import { supabase } from "@/utils/supabase";
 
 export async function GET() {
   try {
-    const { data, error } = await supabase.from("users").select("id").limit(1);
+    const { error } = await supabase.from("users").select("id").limit(1);
     if (error) throw error;
 
     return NextResponse.json({ ok: true, time: new Date().toISOString() });
-  } catch (err: any) {
-    return NextResponse.json({ ok: false, error: err.message }, { status: 500 });
-  }
+  }catch (err: unknown) {
+  const error = err instanceof Error ? err : new Error(String(err));
+  console.error("[cron] unexpected error:", error);
+  return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
+}
+
 }
